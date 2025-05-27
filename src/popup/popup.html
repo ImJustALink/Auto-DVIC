@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="popup.css">
+    <title>Auto DVIC</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <img src="../../assets/icons/icon128.png" alt="Auto DVIC Logo" class="logo">
+                <h1>Start DVIC Inspection</h1>
+            </div>
+            <button type="button" id="settingsBtn" class="settings-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="vehicle-info-section">
+            <button type="button" class="info-toggle">
+                <span class="toggle-icon">▶</span>
+                Vehicle Information
+            </button>
+            <div class="info-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">License:</span>
+                        <span id="vehicleLicense" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">State:</span>
+                        <span id="vehicleState" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">VIN:</span>
+                        <span id="vehicleVin" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Asset Type:</span>
+                        <span id="vehicleType" class="info-value">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="dvicForm">
+            <div class="form-group">
+                <label for="daName">Driver Name</label>
+                <div class="missing-driver-help">
+                    <span class="help-text">Missing Driver?</span>
+                    <div class="tooltip-content">
+                        If you're missing a Driver you recently hired or onboarded, head to settings at the top of this window and re-upload the Associate List CSV from Amazon.
+                    </div>
+                </div>
+                <div class="driver-list-container">
+                    <input 
+                        type="text" 
+                        id="daName" 
+                        name="daName" 
+                        list="driverList"
+                        placeholder="Enter or select driver name"
+                        required
+                    >
+                    <datalist id="driverList"></datalist>
+                    <div id="driverTooltip">
+                        No drivers found. <a href="#" id="importCsvLink">Import driver list</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="inspectionType">Inspection Type</label>
+                <select id="inspectionType" name="inspectionType" required>
+                    <option value="pre">Pre-trip</option>
+                    <option value="post">Post-trip</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="inspDate">Inspection Date</label>
+                <input 
+                    type="date" 
+                    id="inspDate" 
+                    name="inspDate" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="inspTime">Inspection Start Time</label>
+                <input 
+                    type="time" 
+                    id="inspTime" 
+                    name="inspTime" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="odo">Odometer Reading (Optional)</label>
+                <input 
+                    type="number" 
+                    id="odo" 
+                    name="odo" 
+                    placeholder="Enter odometer reading"
+                >
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input 
+                        type="checkbox" 
+                        id="diffLocation" 
+                        name="diffLocation"
+                    >
+                    <label for="diffLocation">Inspection location differs from station</label>
+                </div>
+                
+                <div id="locationGroup" style="display: none;">
+                    <label for="inspLoc">Location</label>
+                    <input 
+                        type="text" 
+                        id="inspLoc" 
+                        name="inspLoc" 
+                        placeholder="Enter inspection location"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input 
+                        type="checkbox" 
+                        id="satisfyCond" 
+                        name="satisfyCond" 
+                        checked
+                    >
+                    <label for="satisfyCond">
+                        Vehicle is in satisfactory condition
+                    </label>
+                </div>
+                
+                <div id="issuesContainer" style="display: none;">
+                    <!-- Section 1: Front Side -->
+                    <div class="inspection-section">
+                        <button type="button" class="section-toggle">
+                            <span class="toggle-icon">▶</span>
+                            Front Side
+                        </button>
+                        <div class="section-content">
+                            <!-- Lights and Light Covers -->
+                            <div class="subsection">
+                                <h4>Lights and Light Covers</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="1_lights_1" name="1_lights_1">
+                                    <label for="1_lights_1">Hazard light is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="1_lights_2" name="1_lights_2">
+                                    <label for="1_lights_2">Headlight is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="1_lights_3" name="1_lights_3">
+                                    <label for="1_lights_3">Any lights are cracked (leaving hole or void), missing, or not working properly</label>
+                                </div>
+                            </div>
+
+                            <!-- Suspension -->
+                            <div class="subsection">
+                                <h4>Suspension & Underbody Shield</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="1_susp_1" name="1_susp_1">
+                                    <label for="1_susp_1">Loose or hanging objects underneath</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="1_susp_2" name="1_susp_2">
+                                    <label for="1_susp_2">Noticeable leaning of vehicle (when parked)</label>
+                                </div>
+                            </div>
+
+                            <!-- EV System -->
+                            <div class="subsection">
+                                <h4>EV System</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="1_ev_1" name="1_ev_1">
+                                    <label for="1_ev_1">Orange wires are present: High Voltage! Do not touch! <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="subsection">
+                                <h4>Body</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="1_body_1" name="1_body_1">
+                                    <label for="1_body_1">Items attached to the body of the vehicle (for example: bumpers and hood latches) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Passenger Side -->
+                    <div class="inspection-section">
+                        <button type="button" class="section-toggle">
+                            <span class="toggle-icon">▶</span>
+                            Passenger Side
+                        </button>
+                        <div class="section-content">
+                            <!-- Mirrors -->
+                            <div class="subsection">
+                                <h4>Side Mirrors</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_mirror_1" name="2_mirror_1">
+                                    <label for="2_mirror_1">Side mirror glass is cracked, damaged, or missing</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_mirror_2" name="2_mirror_2">
+                                    <label for="2_mirror_2">Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_mirror_3" name="2_mirror_3">
+                                    <label for="2_mirror_3">Side mirrors cannot be adjusted</label>
+                                </div>
+                            </div>
+
+                            <!-- Front Tires -->
+                            <div class="subsection">
+                                <h4>Front Tire, Wheel and Rim</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_ftire_1" name="2_ftire_1">
+                                    <label for="2_ftire_1">Tire has insufficient tread (Less than 2/32" or 1.6mm) on inner most, middle, or outer most tread</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_ftire_2" name="2_ftire_2">
+                                    <label for="2_ftire_2">Tire has insufficient tread (Less than 4/32" or 3.2mm) on inner most, middle, or outer most tread <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_ftire_3" name="2_ftire_3">
+                                    <label for="2_ftire_3">Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_ftire_4" name="2_ftire_4">
+                                    <label for="2_ftire_4">Wheel, wheel nut, rim, or mounting equipment is damaged, cracked, loose, missing, or broken</label>
+                                </div>
+                            </div>
+
+                            <!-- Lights -->
+                            <div class="subsection">
+                                <h4>Lights and Light Covers</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_lights_1" name="2_lights_1">
+                                    <label for="2_lights_1">Any lights are cracked (leaving hole or void), missing, or not working properly</label>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="subsection">
+                                <h4>Body and Doors</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_body_1" name="2_body_1">
+                                    <label for="2_body_1">Items attached to the body of the vehicle (for example: side view camera, or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_body_2" name="2_body_2">
+                                    <label for="2_body_2">DOT Requirement – Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing rental provider DOT decals are not covered and are visible. <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_body_3" name="2_body_3">
+                                    <label for="2_body_3">Prime decal is damaged, missing, excessively dirty, or not visible. <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Suspension -->
+                            <div class="subsection">
+                                <h4>Suspension & Underbody Shield</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_susp_1" name="2_susp_1">
+                                    <label for="2_susp_1">Loose or hanging objects underneath</label>
+                                </div>
+                            </div>
+
+                            <!-- EV System -->
+                            <div class="subsection">
+                                <h4>EV System</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_ev_1" name="2_ev_1">
+                                    <label for="2_ev_1">Orange wires are present: High Voltage! Do not touch! <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Back Tires -->
+                            <div class="subsection">
+                                <h4>Back Tire, Wheel and Rim</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_btire_1" name="2_btire_1">
+                                    <label for="2_btire_1">Tire has insufficient tread (Less than 2/32" or 1.6mm) on inner most, middle, or outer most tread.</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_btire_2" name="2_btire_2">
+                                    <label for="2_btire_2">Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_btire_3" name="2_btire_3">
+                                    <label for="2_btire_3">Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="2_btire_4" name="2_btire_4">
+                                    <label for="2_btire_4">Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Back Side -->
+                    <div class="inspection-section">
+                        <button type="button" class="section-toggle">
+                            <span class="toggle-icon">▶</span>
+                            Back Side
+                        </button>
+                        <div class="section-content">
+                            <!-- Lights -->
+                            <div class="subsection">
+                                <h4>Lights and Light Covers</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="3_lights_1" name="3_lights_1">
+                                    <label for="3_lights_1">Hazard light is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="3_lights_2" name="3_lights_2">
+                                    <label for="3_lights_2">License plate light is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="3_lights_3" name="3_lights_3">
+                                    <label for="3_lights_3">Any lights are cracked (leaving hole or void), missing, or not working properly</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="3_lights_4" name="3_lights_4">
+                                    <label for="3_lights_4">Tail light is not working</label>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="subsection">
+                                <h4>Body and Doors</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="3_body_1" name="3_body_1">
+                                    <label for="3_body_1">Items attached to the body of the vehicle (for example: bumper, back-up camera, lift gate, or rear step) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar</label>
+                                </div>
+                            </div>
+
+                            <!-- License Plate -->
+                            <div class="subsection">
+                                <h4>License Plate and Tags</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="3_lic_1" name="3_lic_1">
+                                    <label for="3_lic_1">License plates/temp tags are damaged, missing, illegible, or expired</label>
+                                </div>
+                            </div>
+
+                            <!-- Suspension -->
+                            <div class="subsection">
+                                <h4>Suspension & Underbody Shield</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="3_susp_1" name="3_susp_1">
+                                    <label for="3_susp_1">Loose or hanging objects underneath</label>
+                                </div>
+                            </div>
+
+                            <!-- EV System -->
+                            <div class="subsection">
+                                <h4>EV System</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="3_ev_1" name="3_ev_1">
+                                    <label for="3_ev_1">Orange wires are present: High Voltage! Do not touch! <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Driver Side -->
+                    <div class="inspection-section">
+                        <button type="button" class="section-toggle">
+                            <span class="toggle-icon">▶</span>
+                            Driver Side
+                        </button>
+                        <div class="section-content">
+                            <!-- Back Tires -->
+                            <div class="subsection">
+                                <h4>Back Tire, Wheel and Rim</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_btire_1" name="4_btire_1">
+                                    <label for="4_btire_1">Tire has insufficient tread (Less than 2/32" or 1.6mm) on inner most, middle, or outer most tread.</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_btire_2" name="4_btire_2">
+                                    <label for="4_btire_2">Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_btire_3" name="4_btire_3">
+                                    <label for="4_btire_3">Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or not working properly</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_btire_4" name="4_btire_4">
+                                    <label for="4_btire_4">Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Lights -->
+                            <div class="subsection">
+                                <h4>Lights and Light Covers</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_lights_1" name="4_lights_1">
+                                    <label for="4_lights_1">Any lights are cracked (leaving hole or void), missing, or not working properly</label>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="subsection">
+                                <h4>Body and Doors</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_body_1" name="4_body_1">
+                                    <label for="4_body_1">Items attached to the body of the vehicle (for example: side view camera, or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_body_2" name="4_body_2">
+                                    <label for="4_body_2">DOT Requirement – Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing rental provider DOT decals are not covered and are visible. <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_body_3" name="4_body_3">
+                                    <label for="4_body_3">Prime decal is damaged, missing, excessively dirty, or not visible <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Suspension -->
+                            <div class="subsection">
+                                <h4>Suspension and Exhaust System</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_susp_1" name="4_susp_1">
+                                    <label for="4_susp_1">Active non-clear fluid leaking on the ground</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_susp_2" name="4_susp_2">
+                                    <label for="4_susp_2">Loose or hanging objects underneath</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_susp_3" name="4_susp_3">
+                                    <label for="4_susp_3">Fuel cap is missing or broken <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- EV System -->
+                            <div class="subsection">
+                                <h4>Electric Vehicle</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_ev_1" name="4_ev_1">
+                                    <label for="4_ev_1">Orange wires are present: High Voltage! Do not touch! <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_ev_2" name="4_ev_2">
+                                    <label for="4_ev_2">Charging port cap is missing or broken <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Mirrors -->
+                            <div class="subsection">
+                                <h4>Side Mirrors</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_mirror_1" name="4_mirror_1">
+                                    <label for="4_mirror_1">Side mirror glass is cracked, damaged, or missing</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_mirror_2" name="4_mirror_2">
+                                    <label for="4_mirror_2">Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_mirror_3" name="4_mirror_3">
+                                    <label for="4_mirror_3">Side mirrors cannot be adjusted</label>
+                                </div>
+                            </div>
+
+                            <!-- Front Tires -->
+                            <div class="subsection">
+                                <h4>Front Tire, Wheel and Rim</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_ftire_1" name="4_ftire_1">
+                                    <label for="4_ftire_1">Tire has insufficient tread (Less than 2/32" or 1.6mm) on inner most, middle, or outer most tread</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_ftire_2" name="4_ftire_2">
+                                    <label for="4_ftire_2">Tire has insufficient tread (Less than 4/32" or 3.2mm) on inner most, middle, or outer most tread <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_ftire_3" name="4_ftire_3">
+                                    <label for="4_ftire_3">Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="4_ftire_4" name="4_ftire_4">
+                                    <label for="4_ftire_4">Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or not working properly</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: In Cab -->
+                    <div class="inspection-section">
+                        <button type="button" class="section-toggle">
+                            <span class="toggle-icon">▶</span>
+                            In Cab
+                        </button>
+                        <div class="section-content">
+                            <!-- Body -->
+                            <div class="subsection">
+                                <h4>Body and Doors</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_body_1" name="5_body_1">
+                                    <label for="5_body_1">One or more exterior doors (driver, passenger, cargo, or back door) cannot open, close, lock, or unlock properly from the inside of the vehicle</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_body_2" name="5_body_2">
+                                    <label for="5_body_2">Interior sliding door (bulkhead doors) cannot open or close</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_body_3" name="5_body_3">
+                                    <label for="5_body_3">Items attached to the body of the vehicle (for example: shelves, floor panels) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar</label>
+                                </div>
+                            </div>
+
+                            <!-- Brakes -->
+                            <div class="subsection">
+                                <h4>Brakes</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_brakes_1" name="5_brakes_1">
+                                    <label for="5_brakes_1">Foot brake is grinding, vibrates, leaking air, or not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_brakes_2" name="5_brakes_2">
+                                    <label for="5_brakes_2">Foot brake is squeaking, loose, weak, or stiff</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_brakes_3" name="5_brakes_3">
+                                    <label for="5_brakes_3">Parking brake is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_brakes_4" name="5_brakes_4">
+                                    <label for="5_brakes_4">Parking brake is loose, weak, or stiff</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_brakes_5" name="5_brakes_5">
+                                    <label for="5_brakes_5">Air pressure gauge read less than 79 lb./in2 (5.5 kg/cm2) <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Wipers -->
+                            <div class="subsection">
+                                <h4>Wipers</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_wipers_1" name="5_wipers_1">
+                                    <label for="5_wipers_1">Windshield washer system/wiper fluid reservoir is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_wipers_2" name="5_wipers_2">
+                                    <label for="5_wipers_2">Wiper blades are missing, damaged, or not working</label>
+                                </div>
+                            </div>
+
+                            <!-- Windshield -->
+                            <div class="subsection">
+                                <h4>Windshield</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_windsh_1" name="5_windsh_1">
+                                    <label for="5_windsh_1">Any crack, chip, stars on the windshield >1/2 inch (excluding 1-inch boarder of windshield)</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_windsh_2" name="5_windsh_2">
+                                    <label for="5_windsh_2">Device/Accessory is mounted on the windshield</label>
+                                </div>
+                            </div>
+
+                            <!-- Lights -->
+                            <div class="subsection">
+                                <h4>Lights and Light Covers</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_lights_1" name="5_lights_1">
+                                    <label for="5_lights_1">Any red warning lights/lamps are on or flashing</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_lights_2" name="5_lights_2">
+                                    <label for="5_lights_2">Any yellow warning lights/lamps are on or flashing <span class="dot-ev-note">[EV only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_lights_3" name="5_lights_3">
+                                    <label for="5_lights_3">Dashboard light is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_lights_4" name="5_lights_4">
+                                    <label for="5_lights_4">Hazard light is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_lights_5" name="5_lights_5">
+                                    <label for="5_lights_5">Turn signal is not working</label>
+                                </div>
+                            </div>
+
+                            <!-- Safety -->
+                            <div class="subsection">
+                                <h4>Safety Accessories</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_safety_1" name="5_safety_1">
+                                    <label for="5_safety_1">Delivery device cradle is damaged, missing, or is mounted with a tape, zip-tie or similar</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_safety_2" name="5_safety_2">
+                                    <label for="5_safety_2">Spare fuses or reflective triangles are missing <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_safety_3" name="5_safety_3">
+                                    <label for="5_safety_3">Fire extinguisher is missing, not mounted, mounted with a tape, zip-tie or similar, or the dial/needle is not in the green zone <span class="dot-ev-note">[EV and DOT Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_safety_4" name="5_safety_4">
+                                    <label for="5_safety_4">Device is not able to be stowed behind dashboard without becoming loose and no device mount is present <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_safety_5" name="5_safety_5">
+                                    <label for="5_safety_5">Driver display/center display is blank or not functioning <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Camera -->
+                            <div class="subsection">
+                                <h4>Camera/Monitor</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_cam_1" name="5_cam_1">
+                                    <label for="5_cam_1">Netradyne camera is hanging/disconnected from bracket</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_cam_2" name="5_cam_2">
+                                    <label for="5_cam_2">Rear or side camera monitor is missing, broken, unsecure, obstructed, or not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_cam_3" name="5_cam_3">
+                                    <label for="5_cam_3">Sensors or cameras are dirty, or a warning light/message is present signaling an issue on the dashboard <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Vehicle Documentation -->
+                            <div class="subsection">
+                                <h4>Vehicle Documentation</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_docu_1" name="5_docu_1">
+                                    <label for="5_docu_1">DOT/CA BIT/State Inspection sticker is missing, damaged, illegible, or expired <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_docu_2" name="5_docu_2">
+                                    <label for="5_docu_2">Insurance information, registration, short haul exemption, or certification of lease is missing, damaged, illegible, or expired <span class="dot-ev-note">[DOT Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- HVAC -->
+                            <div class="subsection">
+                                <h4>HVAC System</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_hvac_1" name="5_hvac_1">
+                                    <label for="5_hvac_1">AC is not blowing cold air</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_hvac_2" name="5_hvac_2">
+                                    <label for="5_hvac_2">Defroster/heater is not working</label>
+                                </div>
+                            </div>
+
+                            <!-- Steering, Horn and Alarm -->
+                            <div class="subsection">
+                                <h4>Steering, Horn and Alarm</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_sha_1" name="5_sha_1">
+                                    <label for="5_sha_1">Horn, backup alarm, or seatbelt alarm is not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_sha_2" name="5_sha_2">
+                                    <label for="5_sha_2">Seatbelt is missing, torn, frayed, or not working</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_sha_3" name="5_sha_3">
+                                    <label for="5_sha_3">Steering wheel has excessive vibration</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_sha_4" name="5_sha_4">
+                                    <label for="5_sha_4">Steering wheel is stiff, loose, or needs alignment</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_sha_5" name="5_sha_5">
+                                    <label for="5_sha_5">AVAS noise does not sound when vehicle travels under 12 mph <span class="dot-ev-note">[EV Only]</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Cleanliness -->
+                            <div class="subsection">
+                                <h4>Cleanliness</h4>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="5_clean_1" name="5_clean_1">
+                                    <label for="5_clean_1">Interior of vehicle has excessive grime, odor, dust, or trash present</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit">Begin Inspection Submission</button>
+        </form>
+        
+        <div id="status"></div>
+    </div>
+    <script src="../vendor/pdf-lib.min.js"></script>
+    <script src="../utils/pdf-handler.js" type="module"></script>
+    <script src="popup.js" type="module"></script>
+</body>
+</html>

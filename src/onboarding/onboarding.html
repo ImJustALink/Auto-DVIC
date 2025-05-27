@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto DVIC Setup</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="onboarding.css">
+</head>
+<body>
+    <!-- Floating Onboarding Checklist -->
+    <div class="onboarding-checklist" id="onboardingChecklist">
+        <div class="checklist-header">
+            <h3>Setup Checklist</h3>
+            <button class="checklist-close" id="closeChecklist" title="Hide checklist">×</button>
+        </div>
+        <div class="checklist-items">
+            <div class="checklist-item" data-step="dsp">
+                <div class="checklist-number">1</div>
+                <div class="checklist-content">
+                    <span class="checklist-text">Enter DSP Code</span>
+                    <span class="checklist-status"></span>
+                </div>
+            </div>
+            <div class="checklist-item" data-step="station">
+                <div class="checklist-number">2</div>
+                <div class="checklist-content">
+                    <span class="checklist-text">Enter Station Code</span>
+                    <span class="checklist-status"></span>
+                </div>
+            </div>
+            <div class="checklist-item" data-step="drivers">
+                <div class="checklist-number">3</div>
+                <div class="checklist-content">
+                    <span class="checklist-text">Import Driver List</span>
+                    <span class="checklist-status"></span>
+                </div>
+            </div>
+            <div class="checklist-item" data-step="save">
+                <div class="checklist-number">4</div>
+                <div class="checklist-content">
+                    <span class="checklist-text">Save Settings</span>
+                    <span class="checklist-status"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="onboarding-container">
+        <div class="onboarding-header">
+            <img src="../../assets/AutoDVIC_Logo.png" alt="Auto DVIC Logo">
+            <h1>Welcome to Auto DVIC</h1>
+            <p>Let's get you set up to automate your DVIC inspections.</p>
+        </div>
+
+        <div class="important-note">
+            Please provide your DSP and Station code and upload your Associate list before first use!
+        </div>
+
+        <div class="settings-section">
+            <h2>Configuration</h2>
+            <div class="form-group">
+                <label for="dspCode">DSP Code</label>
+                <input 
+                    type="text" 
+                    id="dspCode" 
+                    placeholder="Enter your DSP code"
+                    required
+                >
+                <div id="dspError" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="stationCode">Station Code</label>
+                <input 
+                    type="text" 
+                    id="stationCode" 
+                    placeholder="Enter your station code"
+                    required
+                >
+                <div id="stationError" class="error-message"></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>Driver Import</h2>
+            <p class="section-description">
+                Please upload your associate list CSV. This enables Driver selection and referencing when searching for DAs and submitting DVICs. Click the button below to be directed to your Associate List, and click the small download icon on the right at the top of the list.
+            </p>
+            
+            <div class="form-group">
+                <div class="button-group">
+                    <a href="https://logistics.amazon.com/workforce?pageId=da_console_associates&tabId=da-console-associates-tab" 
+                       target="_blank" 
+                       class="secondary-button amazon-button">
+                        Get CSV from Amazon
+                    </a>
+                    <label for="driverCsv" class="file-input-label">
+                        <span class="file-input-text">Choose CSV File</span>
+                        <input 
+                            type="file" 
+                            id="driverCsv" 
+                            accept=".csv"
+                            class="file-input"
+                        >
+                    </label>
+                </div>
+                <div id="csvError" class="error-message"></div>
+                <div id="csvSuccess" class="success-message"></div>
+            </div>
+
+            <div class="driver-preview" id="driverPreview">
+                <h3>Imported Drivers</h3>
+                <div class="driver-list" id="driverList">
+                    <!-- Driver list will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>Preferences</h2>
+            <div class="toggle-group">
+                <span class="toggle-label">Show notifications after submission</span>
+                <label class="toggle">
+                    <input type="checkbox" id="showNotifications" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="toggle-group">
+                <span class="toggle-label">Ask where to save PDF files</span>
+                <label class="toggle">
+                    <input type="checkbox" id="askSaveLocation">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>Advanced Settings</h2>
+            <div class="toggle-group">
+                <span class="toggle-label">
+                    Development Mode
+                    <span class="tooltip">When enabled, form submission will be skipped for testing purposes</span>
+                </span>
+                <label class="toggle">
+                    <input type="checkbox" id="devMode">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="restart-onboarding">
+                <button id="restartOnboarding" class="secondary-button">Restart Onboarding Guide</button>
+            </div>
+        </div>
+
+        <div class="onboarding-footer">
+            <button id="saveSettings">Save Settings</button>
+        </div>
+    </div>
+    <script src="onboarding.js"></script>
+</body>
+</html>

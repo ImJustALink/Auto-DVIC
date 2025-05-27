@@ -1,0 +1,300 @@
+Form Fields in order of appearance in PDF:
+name
+dsp
+asset_type
+vin
+lic
+lic_state
+odo
+insp_loc
+station
+insp_date
+insp_time
+insp_time_am
+insp_time_pm
+insp_type_pre
+insp_type_post
+1_lights_1
+1_lights_2
+1_lights_3
+1_susp_1
+1_susp_2
+1_ev_1
+1_body_1
+2_mirror_1
+2_mirror_2
+2_mirror_3
+2_ftire_1
+2_ftire_2
+2_ftire_3
+2_ftire_4
+2_lights_1
+2_body_1
+2_body_2
+2_body_3
+2_susp_1
+2_ev_1
+2_btire_1
+2_btire_2
+2_btire_3
+2_btire_4
+3_lights_1
+3_lights_2
+3_lights_3
+3_lights_4
+3_body_1
+3_lic_1
+3_susp_1
+3_ev_1
+4_btire_1
+4_btire_2
+4_btire_3
+4_btire_4
+4_lights_1
+4_body_1
+4_body_2
+4_body_3
+4_susp_1
+4_susp_2
+4_susp_3
+4_ev_1
+4_ev_2
+4_mirror_1
+4_mirror_2
+4_mirror_3
+4_ftire_1
+4_ftire_2
+4_ftire_3
+4_ftire_4
+5_body_1
+5_body_2
+5_body_3
+5_brakes_1
+5_brakes_2
+5_brakes_3
+5_brakes_4
+5_brakes_5
+5_wipers_1
+5_wipers_2
+5_windsh_1
+5_windsh_2
+5_lights_1
+5_lights_2
+5_lights_3
+5_lights_4
+5_lights_5
+5_safety_1
+5_safety_2
+5_safety_3
+5_safety_4
+5_safety_5
+5_cam_1
+5_cam_2
+5_cam_3
+5_docu_1
+5_docu_2
+5_hvac_1
+5_hvac_2
+5_sha_1
+5_sha_2
+5_sha_3
+5_sha_4
+5_sha_5
+5_clean_1
+satisfy_cond
+signature
+
+Field Descriptions:
+name - Driver's name
+dsp - DSP Shortcode for Company Name
+asset_type - Vehicle Type
+vin - Vehicle VIN
+lic - Vehicle License Plate
+lic_state - License Plate State
+odo - Current Odometer Reading
+insp_loc - Inspection Location
+station - Station Code
+insp_date - Inspection Date
+insp_time - Inspection Time
+insp_time_am - If inspection time is AM
+insp_time_pm - If inspection time is PM
+insp_type_pre - If inspection is pre-trip
+insp_type_post - If inspection is post-trip
+1_lights_1 - Section 1 (Front Side of vehicle); Lights and light covers subsection; Hazard light is not working
+1_lights_2 - Section 1 (Front Side of vehicle); Lights and light covers subsection; Headlight is not working
+1_lights_3 - Section 1 (Front Side of vehicle); Lights and light covers subsection; Any lights are cracked (leaving hole or void), missing, or not working properly
+1_susp_1 - Section 1 (Front Side of vehicle); Suspension and exhaust system subsection; Loose or hanging objects underneath
+1_susp_2 - Section 1 (Front Side of vehicle); Suspension and exhaust system subsection; Noticeable leaning of vehicle (when parked)
+1_ev_1 - Section 1 (Front Side of vehicle); Electric vehicle subsection; Orange wires are present: High Voltage! Do not touch!
+1_body_1 - Section 1 (Front Side of vehicle); Body and doors subsection; Items attached to the body of the vehicle (for example: bumpers and hood latches) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar
+2_mirror_1 - Section 2 (Passenger Side of vehicle); Side mirrors subsection; Side mirror glass is cracked, damaged, or missing 
+2_mirror_2 - Section 2 (Passenger Side of vehicle); Side mirrors subsection; Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar
+2_mirror_3 - Section 2 (Passenger Side of vehicle); Side mirrors subsection; Side mirrors cannot be adjusted 
+2_ftire_1 - Section 2 (Passenger Side of vehicle); Front tire, wheel and rim subsection; Tire has insufficient tread (Less than 2/32\ or 1.6mm) on inner most, middle, or outer most tread
+2_ftire_2 - Section 2 (Passenger Side of vehicle); Front tire, wheel and rim subsection; Tire has insufficient tread (Less than 4/32\ or 3.2mm) on inner most, middle, or outer most tread [DOT Only]
+2_ftire_3 - Section 2 (Passenger Side of vehicle); Front tire, wheel and rim subsection; Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface
+2_ftire_4 - Section 2 (Passenger Side of vehicle); Front tire, wheel and rim subsection; Wheel, wheel nut, rim, or mounting equipment is damaged, cracked, loose, missing, or broken
+2_lights_1 - Section 2 (Passenger Side of vehicle); Lights and light covers subsection; Any lights are cracked (leaving hole or void), missing, or not working properly
+2_body_1 - Section 2 (Passenger Side of vehicle); Body and doors subsection; Items attached to the body of the vehicle (for example: side view camera, or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar
+2_body_2 - Section 2 (Passenger Side of vehicle); Body and doors subsection; DOT Requirement – Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing rental provider DOT decals are not covered and are visible. [DOT Only]
+2_body_3 - Section 2 (Passenger Side of vehicle); Body and doors subsection; Prime decal is damaged, missing, excessively dirty, or not visible.
+2_susp_1 - Section 2 (Passenger Side of vehicle); Suspension and exhaust system subsection; Loose or hanging objects underneath
+2_ev_1 - Section 2 (Passenger Side of vehicle); Electric vehicle subsection; Orange wires are present: High Voltage! Do not touch!
+2_btire_1 - Section 2 (Passenger Side of vehicle); Back tire and wheel and rim subsection; Tire has insufficient tread (Less than 2/32\ or 1.6mm) on inner most, middle, or outer most tread.
+2_btire_2 - Section 2 (Passenger Side of vehicle); Back tire and wheel and rim subsection; Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface 
+2_btire_3 - Section 2 (Passenger Side of vehicle); Back tire and wheel and rim subsection; Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken 
+2_btire_4 - Section 2 (Passenger Side of vehicle); Back tire and wheel and rim subsection; Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar [DOT Only]
+3_lights_1 - Section 3 (Back Side of vehicle); Lights and light covers subsection; Hazard light is not working
+3_lights_2 - Section 3 (Back Side of vehicle); Lights and light covers subsection; License plate light is not working
+3_lights_3 - Section 3 (Back Side of vehicle); Lights and light covers subsection; Any lights are cracked (leaving hole or void), missing, or not working properly
+3_lights_4 - Section 3 (Back Side of vehicle); Lights and light covers subsection; Tail light is not working
+3_body_1 - Section 3 (Back Side of vehicle); Body and doors subsection; Items attached to the body of the vehicle (for example: bumper, back-up camera, lift gate, or rear step) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar
+3_lic_1 - Section 3 (Back Side of vehicle); License plate and tags subsection; License plates/temp tags are damaged, missing, illegible, or expired
+3_susp_1 - Section 3 (Back Side of vehicle); Suspension and exhaust system subsection; Loose or hanging objects underneath
+3_ev_1 - Section 3 (Back Side of vehicle); Electric vehicle subsection; Orange wires are present: High Voltage! Do not touch!
+4_btire_1 - Section 4 (Driver Side of vehicle); Back tire and wheel and rim subsection; Tire has insufficient tread (Less than 2/32\ or 1.6mm) on inner most, middle, or outer most tread.
+4_btire_2 - Section 4 (Driver Side of vehicle); Back tire and wheel and rim subsection; Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface
+4_btire_3 - Section 4 (Driver Side of vehicle); Back tire and wheel and rim subsection; Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken
+4_btire_4 - Section 4 (Driver Side of vehicle); Back tire and wheel and rim subsection; Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar [DOT Only]
+4_lights_1 - Section 4 (Driver Side of vehicle); Lights and light covers subsection; Any lights are cracked (leaving hole or void), missing, or not working properly
+4_body_1 - Section 4 (Driver Side of vehicle); Body and doors subsection; Items attached to the body of the vehicle (for example: side view camera, or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar
+4_body_2 - Section 4 (Driver Side of vehicle); Body and doors subsection; DOT Requirement – Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing rental provider DOT decals are not covered and are visible. [DOT Only]
+4_body_3 - Section 4 (Driver Side of vehicle); Body and doors subsection; Prime decal is damaged, missing, excessively dirty, or not visible.
+4_susp_1 - Section 4 (Driver Side of vehicle); Suspension and exhaust system subsection; Active non-clear fluid leaking on the ground
+4_susp_2 - Section 4 (Driver Side of vehicle); Suspension and exhaust system subsection; Loose or hanging objects underneath
+4_susp_3 - Section 4 (Driver Side of vehicle); Suspension and exhaust system subsection; Fuel cap is missing or broken [DOT Only]
+4_ev_1 - Section 4 (Driver Side of vehicle); Electric vehicle subsection; Orange wires are present: High Voltage! Do not touch!
+4_ev_2 - Section 4 (Driver Side of vehicle); Electric vehicle subsection; Charging port cap is missing or broken
+4_mirror_1 - Section 4 (Driver Side of vehicle); Side mirrors subsection; Side mirror glass is cracked, damaged, or missing
+4_mirror_2 - Section 4 (Driver Side of vehicle); Side mirrors subsection; Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar
+4_mirror_3 - Section 4 (Driver Side of vehicle); Side mirrors subsection; Side mirrors cannot be adjusted
+4_ftire_1 - Section 4 (Driver Side of vehicle); Front tire and wheel and rim subsection; Tire has insufficient tread (Less than 2/32\ or 1.6mm) on inner most, middle, or outer most tread
+4_ftire_2 - Section 4 (Driver Side of vehicle); Front tire and wheel and rim subsection; Tire has insufficient tread (Less than 4/32\ or 3.2mm) on inner most, middle, or outer most tread [DOT Only]
+4_ftire_3 - Section 4 (Driver Side of vehicle); Front tire and wheel and rim subsection; Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface
+4_ftire_4 - Section 4 (Driver Side of vehicle); Front tire and wheel and rim subsection; Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken
+5_body_1 - Section 5 (In cab); Body and doors subsection; One or more exterior doors (driver, passenger, cargo, or back door) cannot open, close, lock, or unlock properly from the inside of the vehicle
+5_body_2 - Section 5 (In cab); Body and doors subsection; Interior sliding door (bulkhead doors) cannot open or close
+5_body_3 - Section 5 (In cab); Body and doors subsection; Items attached to the body of the vehicle (for example: shelves, floor panels) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar
+5_brakes_1 - Section 5 (In cab); Brakes subsection; Foot brake is grinding, vibrates, leaking air, or not working
+5_brakes_2 - Section 5 (In cab); Brakes subsection; Foot brake is squeaking, loose, weak, or stiff
+5_brakes_3 - Section 5 (In cab); Brakes subsection; Parking brake is not working
+5_brakes_4 - Section 5 (In cab); Brakes subsection; Parking brake is loose, weak, or stiff
+5_brakes_5 - Section 5 (In cab); Brakes subsection; Air pressure gauge read less than 79 lb./in2 (5.5 kg/cm2) [DOT Only]
+5_wipers_1 - Section 5 (In cab); Wipers subsection; Windshield washer system/wiper fluid reservoir is not working
+5_wipers_2 - Section 5 (In cab); Wipers subsection; Wiper blades are missing, damaged, or not working
+5_windsh_1 - Section 5 (In cab); Windshield subsection; Any crack, chip, stars on the windshield >1/2 inch (excluding 1-inch boarder of windshield) 
+5_windsh_2 - Section 5 (In cab); Windshield subsection; Device/Accessory is mounted on the windshield 
+5_lights_1 - Section 5 (In cab); Lights and light covers subsection; Any red warning lights/lamps are on or flashing
+5_lights_2 - Section 5 (In cab); Lights and light covers subsection; Any yellow warning lights/lamps are on or flashing [EV only]
+5_lights_3 - Section 5 (In cab); Lights and light covers subsection; Dashboard light is not working
+5_lights_4 - Section 5 (In cab); Lights and light covers subsection; Hazard light is not working
+5_lights_5 - Section 5 (In cab); Lights and light covers subsection; Turn signal is not working
+5_safety_1 - Section 5 (In cab); Safety accessories subsection; Delivery device cradle is damaged, missing, or is mounted with a tape, zip-tie or similar
+5_safety_2 - Section 5 (In cab); Safety accessories subsection; Spare fuses or reflective triangles are missing [DOT Only]
+5_safety_3 - Section 5 (In cab); Safety accessories subsection; Fire extinguisher is missing, not mounted, mounted with a tape, zip-tie or similar, or the dial/needle is not in the green zone [EV and DOT Only]
+5_safety_4 - Section 5 (In cab); Safety accessories subsection; Device is not able to be stowed behind dashboard without becoming loose and no device mount is present [EV Only]
+5_safety_5 - Section 5 (In cab); Safety accessories subsection; Driver display/center display is blank or not functioning [EV Only]
+5_cam_1 - Section 5 (In cab); Camera/monitor subsection; Netradyne camera is hanging/disconnected from bracket
+5_cam_2 - Section 5 (In cab); Camera/monitor subsection; Rear or side camera monitor is missing, broken, unsecure, obstructed, or not working
+5_cam_3 - Section 5 (In cab); Camera/monitor subsection; Sensors or cameras are dirty, or a warning light/message is present signaling an issue on the dashboard [EV Only]
+5_docu_1 - Section 5 (In cab); Vehicle documentation subsection; DOT/CA BIT/State Inspection sticker is missing, damaged, illegible, or expired [DOT Only]
+5_docu_2 - Section 5 (In cab); Vehicle documentation subsection; Insurance information, registration, short haul exemption, or certification of lease is missing, damaged, illegible, or expired [DOT Only]
+5_hvac_1 - Section 5 (In cab); HVAC system subsection; AC not blowing cold air
+5_hvac_2 - Section 5 (In cab); HVAC system subsection; Defroster/heater is not working 
+5_sha_1 - Section 5 (In cab); Steering and horn and alarm subsection; Horn, backup alarm, or seatbelt alarm is not working
+5_sha_2 - Section 5 (In cab); Steering and horn and alarm subsection; Seatbelt is missing, torn, frayed, or not working
+5_sha_3 - Section 5 (In cab); Steering and horn and alarm subsection; Steering wheel has excessive vibration
+5_sha_4 - Section 5 (In cab); Steering and horn and alarm subsection; Steering wheel is stiff, loose, or needs alignment
+5_sha_5 - Section 5 (In cab); Steering and horn and alarm subsection; AVAS noise does not sound when vehicle travels under 12 mph [EV Only]
+5_clean_1 - Section 5 (In cab); Cleanliness subsection; Interior of vehicle has excessive grime, odor, dust, or trash present
+satisfy_cond - If vehicle is in satisfactory condition
+signature - Driver's signature
+
+Field relation in Fleet portal:
+1_lights_1 - Front Side section; Lights and light covers subsection; "Hazard light is not working" checkbox
+1_lights_2 - Front Side section; Lights and light covers subsection; "Headlight is not working" checkbox
+1_lights_3 - Front Side section; Lights and light covers subsection; "Any lights or light covers are cracked (leaving hole or void), missing, or not working properly" checkbox
+1_susp_1 - Front Side section; Suspension & underbody shield subsection; "Loose or hanging objects underneath" checkbox
+1_susp_2 - Front Side section; Suspension & underbody shield subsection; "Noticeable leaning of vehicle (when parked)" checkbox
+1_ev_1 - Front Side section; EV system subsection; "Orange wires are present: High Voltage! Do not touch!" checkbox
+1_body_1 - Front Side section; Body and doors subsection; "Items attached to the body of the vehicle (for example: bumpers and hood latches) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar" checkbox
+2_mirror_1 - Passenger Side section; Side mirrors subsection; "Side mirror or window glass is cracked, damaged, or missing" checkbox
+2_mirror_2 - Passenger Side section; Side mirrors subsection; "Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar" checkbox
+2_mirror_3 - Passenger Side section; Side mirrors subsection; "Side mirrors cannot be adjusted" checkbox 
+2_ftire_1 - Passenger Side section; Front tire, wheel and rim subsection; "Tire has insufficient tread (Less than 2/32\ or 1.6mm) on inner most, middle, or outer most tread" checkbox
+2_ftire_2 - Passenger Side section; Front tire, wheel and rim subsection; "Tire has insufficient tread (Less than 4/32\ or 3.2mm) on inner most, middle, or outer most tread" checkbox
+2_ftire_3 - Passenger Side section; Front tire, wheel and rim subsection; "Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface" checkbox
+2_ftire_4 - Passenger Side section; Front tire, wheel and rim subsection; "Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken" checkbox
+2_lights_1 - Passenger Side section; Lights and light covers subsection; "Any lights or light covers are cracked (leaving hole or void), missing, or not working properly" checkbox
+2_body_1 - Passenger Side section; Body and doors subsection; "Items attached to the body of the vehicle (for example: side view camera, or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar" checkbox
+2_body_2 - Passenger Side section; Body and doors subsection; "Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing DOT decals on rental vehicles are not covered and visible" checkbox
+2_body_3 - Passenger Side section; Body and doors subsection; "Prime decal is damaged, missing, excessively dirty, or not visible" checkbox
+2_susp_1 - Passenger Side section; Suspension & underbody shield subsection; "Loose or hanging objects underneath" checkbox
+2_ev_1 - Passenger Side section; EV system subsection; "Orange wires are present: High Voltage! Do not touch!" checkbox
+2_btire_1 - Passenger Side section; Back tire, wheel and rim subsection; "Tire has insufficient tread (Less than 2/32\ or 1.6mm) on inner most, middle, or outer most tread" checkbox
+2_btire_2 - Passenger Side section; Back tire, wheel and rim subsection; "Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface" checkbox
+2_btire_3 - Passenger Side section; Back tire, wheel and rim subsection; "Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken" checkbox
+2_btire_4 - Passenger Side section; Back tire, wheel and rim subsection; "Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar" checkbox
+3_lights_1 - Back side section; Lights and light covers subsection; "Hazard light is not working" checkbox
+3_lights_2 - Back side section; Lights and light covers subsection; "License plate light is not working" checkbox
+3_lights_3 - Back side section; Lights and light covers subsection; "Any lights or light covers are cracked (leaving hole or void), missing, or not working properly" checkbox
+3_lights_4 - Back side section; Lights and light covers subsection; "Tail light is not working" checkbox
+3_body_1 - Back side section; Body and doors subsection; "Items attached to the body of the vehicle (for example: bumper, back-up camera, or rear step) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar" checkbox
+3_lic_1 - Back side section; License plate/tags subsection; "License plates/temp tags are damaged, missing, illegible, or expired" checkbox
+3_susp_1 - Back side section; Suspension & underbody shield subsection; "Loose or hanging objects underneath" checkbox
+3_ev_1 - Back side section; EV system subsection; "Orange wires are present: High Voltage! Do not touch!" checkbox
+4_btire_1 - Driver Side section; Back tire, wheel and rim subsection; "Tire has insufficient tread (Less than 2/32\ or 1.6mm) on inner most, middle, or outer most tread" checkbox
+4_btire_2 - Driver Side section; Back tire, wheel and rim subsection; "Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface" checkbox
+4_btire_3 - Driver Side section; Back tire, wheel and rim subsection; "Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken" checkbox
+4_btire_4 - Driver Side section; Back tire, wheel and rim subsection; "Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar" checkbox
+4_lights_1 - Driver Side section; Lights and light covers subsection; "Any lights or light covers are cracked (leaving hole or void), missing, or not working properly" checkbox
+4_body_1 - Driver Side section; Body and doors subsection; "Items attached to the body of the vehicle (for example: side view camera, or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar" checkbox
+4_body_2 - Driver Side section; Body and doors subsection; "Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing DOT decals on rental vehicles are not covered and visible." checkbox
+4_body_3 - Driver Side section; Body and doors subsection; "Prime decal is damaged, missing, excessively dirty, or not visible" checkbox
+4_susp_1 - Driver Side section; Suspension & underbody shield subsection; "Active non-clear fluid leaking on the ground" checkbox
+4_susp_2 - Driver Side section; Suspension & underbody shield subsection; "Loose or hanging objects underneath" checkbox
+4_susp_3 - Driver Side section; Charging port and fluids subsection; "Fuel cap is missing or broken" checkbox
+4_ev_1 - Driver Side section; Electric vehicle subsection; "Orange wires are present: High Voltage! Do not touch!" checkbox
+4_ev_2 - Driver Side section; Body and doors subsection; "Charging port cap is missing or broken" checkbox
+4_mirror_1 - Driver Side section; Side mirrors subsection; "Side mirror or window glass is cracked, damaged, or missing" checkbox
+4_mirror_2 - Driver Side section; Side mirrors subsection; "Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar" checkbox
+4_mirror_3 - Driver Side section; Side mirrors subsection; "Side mirrors cannot be adjusted" checkbox
+4_ftire_1 - Driver Side section; Front tire, wheel and rim subsection; "Tire has insufficient tread (Less than 2/32\ or 1.6mm) on inner most, middle, or outer most tread" checkbox
+4_ftire_2 - Driver Side section; Front tire, wheel and rim subsection; "Tire has insufficient tread (Less than 4/32\ or 3.2mm) on inner most, middle, or outer most tread" checkbox
+4_ftire_3 - Driver Side Section; Front tire, wheel and rim subsection; "Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface" checkbox
+4_ftire_4 - Driver Side Section; Front tire, wheel and rim subsection; "Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken" checkbox
+5_body_1 - In Cab section; Body and doors subsection; "One or more exterior doors (driver, passenger, cargo, or back door) cannot open, close, lock, or unlock properly from the inside of the vehicle" checkbox
+5_body_2 - In Cab section; Body and doors subsection; "Interior sliding door (bulkhead doors) cannot open or close" checkbox
+5_body_3 - In Cab section; Body and doors subsection; "Items attached to the body of the vehicle (for example: shelves, floor panels) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar" checkbox
+5_brakes_1 - In Cab section; Brakes subsection; "Foot brake is grinding, vibrates, leaking air, or not working" checkbox
+5_brakes_2 - In Cab section; Brakes subsection; "Foot brake is squeaking, loose, weak, or stiff" checkbox
+5_brakes_3 - In Cab section; Brakes subsection; "Parking brake is not working" checkbox
+5_brakes_4 - In Cab section; Brakes subsection; "Parking brake is loose, weak, or stiff" checkbox
+5_brakes_5 - In Cab section; Brakes subsection; "Air pressure gauge read less than 79 lb./in2 (5.5 kg/cm2)" checkbox
+5_wipers_1 - In Cab section; Wipers subsection; "Windshield washer system/wiper fluid reservoir is not working" checkbox
+5_wipers_2 - In Cab section; Wipers subsection; "Wiper blades are missing, damaged, or not working" checkbox
+5_windsh_1 - In Cab section; Windshield subsection; "Any crack, chip, stars on the windshield >1/2 inch (excluding 1-inch boarder of windshield)" checkbox
+5_windsh_2 - In Cab section; Windshield subsection; "Device/Accessory is mounted on the windshield" checkbox
+5_lights_1 - In Cab section; Lights and light covers subsection; "Any red warning lights/lamps are on or flashing" checkbox
+5_lights_2 - In Cab section; Lights and light covers subsection; "Any yellow warning lights/lamps are on or flashing" checkbox
+5_lights_3 - In Cab section; Lights and light covers subsection; "Dashboard light is not working" checkbox
+5_lights_4 - In Cab section; Lights and light covers subsection; "Hazard light is not working" checkbox
+5_lights_5 - In Cab section; Lights and light covers subsection; "Turn signal is not working" checkbox
+5_safety_1 - In Cab section; Safety accessories subsection; "Delivery device cradle is damaged, missing, or is mounted with a tape, zip-tie or similar" checkbox
+5_safety_2 - General section; Safety accessories subsection; "Spare fuses or reflective triangles are missing" checkbox
+5_safety_3 - In Cab section; Safety accessories subsection; "Fire extinguisher is missing, not mounted, mounted with a tape, zip-tie or similar, or the dial/needle is not in the green zone" checkbox
+5_safety_4 - In Cab section; Safety accessories subsection; "Device is not able to be stowed behind dashboard without becoming loose and no device mount is present" checkbox
+5_safety_5 - In Cab section; Safety accessories subsection; "Driver display/center display is blank or not functioning" checkbox
+5_cam_1 - In Cab section; Camera/monitor subsection; "Netradyne camera is hanging/disconnected from bracket" checkbox
+5_cam_2 - In Cab section; Camera/monitor subsection; "Rear or side camera monitor is missing, broken, unsecure, obstructed, or not working" checkbox
+5_cam_3 - In Cab section; Camera/monitor subsection; "Sensors or cameras are dirty, or a warning light/message is present signaling an issue on the dashboard" checkbox
+5_docu_1 - General section; Vehicle documentation subsection; "DOT/CA BIT/State Inspection sticker is missing, damaged, illegible, or expired" checkbox
+5_docu_2 - General section; Vehicle documentation subsection; "Insurance information, registration, short haul exemption, or certification of lease is missing, damaged, illegible, or expired" checkbox
+5_hvac_1 - In Cab section; HVAC systems subsection; "AC is not blowing cold air" checkbox
+5_hvac_2 - In Cab section; HVAC systems subsection; "Defroster/heater is not working" checkbox
+5_sha_1 - In Cab section; Steering, seatbelt, horn and alarm subsection; "Horn, backup alarm, or seatbelt alarm is not working" checkbox
+5_sha_2 - In Cab section; Steering, seatbelt, horn and alarm subsection; "Seatbelt is missing, torn, frayed, or not working" checkbox
+5_sha_3 - In Cab section; Steering, seatbelt, horn and alarm subsection; "Steering wheel has excessive vibration" checkbox
+5_sha_4 - In Cab section; Steering, seatbelt, horn and alarm subsection; "Steering wheel is stiff, loose, or needs alignment" checkbox
+5_sha_5 - In Cab section; Steering, seatbelt, horn and alarm subsection; "AVAS noise does not sound when vehicle travels under 12 mph" checkbox
+5_clean_1 - General section; VehicleCleanliness subsection; "Interior of vehicle has excessive grime, odor, dust, or trash present" checkbox

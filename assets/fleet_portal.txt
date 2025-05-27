@@ -1,0 +1,215 @@
+Vehicle Page Info Header Example:
+    Notes:
+    - LICENSE PLATE info is for the "lic" field in the PDF
+    - LICENSE STATE info is for the "lic_state" field in the PDF. Remove surrounding parenthesis if any. If "UNKO" leave blank and don't store value.
+    - VEHICLE VIN info is for the "vin" field in the PDF.
+    - VEHICLE MILEAGE info is for the "odo" field in the PDF. Remove "miles" after value and prefil popup form mileage with this value. If info is "Mileage unknown" then leave blank and don't store value.
+    - ASSET TYPE info is for the "asset_type" field in the PDF.
+
+    Structure:
+    <div class="css-dsf1ob">
+        <div class="css-1pii3wh">
+            <h1 class="css-1ydezzy" mdn-text="">VEHICLE NAME</h1>
+        </div>
+        <div class="css-x3vv9y">
+            <div>
+                <div class="css-1cpprsi">
+                    <div class="css-ahrpa1">
+                        <div class="css-qodthi">
+                            <div class="pill-item css-x3vv9y">
+                                <div class="css-h1vusw">
+                                    <p class="css-86vfqe" mdn-text="">VEHICLE YEAR MAKE, MODEL</p>
+                                </div>
+                            </div>
+                            <div class="pill-item css-x3vv9y">
+                                <div class="css-h1vusw">
+                                    <div class="css-1b9zydf">
+                                        <p class="css-n3t751" mdn-text="">LICENSE PLATE</p>
+                                        <p class="css-n3t751" mdn-text="">LICENSE STATE</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pill-item css-x3vv9y">
+                                <div class="css-h1vusw">
+                                    <p class="css-86vfqe" mdn-text="">VEHICLE VIN</p>
+                                </div>
+                            </div>
+                            <div class="pill-item css-x3vv9y">
+                                <div class="css-h1vusw">
+                                    <p class="css-86vfqe" mdn-text="">VEHICLE STATION</p>
+                                </div>
+                            </div>
+                            <div class="pill-item css-x3vv9y">
+                                <p class="css-vses6e" mdn-text="">VEHICLE MILEAGE</p>
+                            </div>
+                            <div class="pill-item css-x3vv9y">
+                                <div class="css-h1vusw">
+                                    <p class="css-86vfqe" mdn-text="">ASSET TYPE</p>
+                                </div>
+                            </div>
+                            <div class="pill-item css-x3vv9y">
+                                <div class="css-h1vusw">
+                                    <p class="css-86vfqe" mdn-text="">VEHICLE OWNERSHIP</p>
+                                    <div class="css-1pii3wh">
+                                        <p class="css-86vfqe" mdn-text="">OWNERSHIP DATE</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+DVIC submission flow:
+    - User clicks "Begin Inspection Submission" button. Extension opens and fills DVIC pdf in the background and saves the filled file. Popup then closes.
+    - Extension selects/clicks the "Upload inspection" button on vehicle page to begin inspection upload and information provision to the Amazon Fleet portal. "Upload inspection" button is the same button we target to add the extensions's "Auto DVIC" button.
+    - Extension waits for new page to load and then searches for the div with the class "css-1b9zydf" or looks for the "Select file to upload" link/button and clicks it. If possible it auto selects the pdf file we generated, otherwise waits for the user to select the pdf file.
+    - By default the page has the radio button for "Pre-trip" selected. If the user selects "Post-trip" in the popup for the inspection, the extension searches for the radio button with the value of "POST_TRIP_DVIC" and clicks it.
+    - The extension then searches for the div with the class "css-1geyss9" or the mdn-input-box with the id of "select-68" which is the Driver name field. The extension clicks this field and enters the DA name provided via the popup. An autocomplete list of drivers appears with their transporter IDs. The extension then searches for the driver with the same name as the one entered and makes sure the transporter ID in the list matches that of the selected driver. If a match is found, the driver is selected. If no match is found, the extension clears the field and trys once more. If still no match is found, the user is prompted to select the driver manually.
+    - The extension then searches for the div with the class "css-1nbeb1f" which is the inspection date field. The extension clicks this field and enters the inspection date provided via the popup.
+    - The extension then searches for the div with the class "css-lwsvuc" which is the inspection time field. The extension clicks this field and enters the inspection time provided via the popup. The time has to be entered with the format HHMMAM or HHMMPM.
+    - By default the page has the radio button "Yes" for "Did the inspection identify any defects?" selected. If the user deselected "Vehicle is in satisfactory condition" in the popup and selected vehicle issues, then the extension will do nothing for this step. If the user left the "Vehicle is in satisfactory condition" selected in the popup, then the extension searches for the two radio buttons with the name of "defectsFoundQues" and selects the second one (has value of "false") to indicate "No".
+    - The extension then searches for the button with the class "css-c6ayu0" and clicks it, which if the user left "Vehicle is in satisfactory condition" selected in the popup and extension selected the "No" radio, the button will have the text "Next: Review & submit". If the user deselected the "Vehicle is in satisfactory condition" in the popup and provided issues and the extension left the "Yes" radio selected, then the button text will be "Next: Select defects".
+    - If the button related to no defects was selected, the extension will wait for the page to change and then search for button with the class "css-c6ayu0" and the text "Submit inspection" and click it.
+    - If the button related to vehicle defects found was selected, the extension will wait for the page to change and then search for all divs with the class "css-1lne09z" and click on each of their first child elements as these are all dropdowns for issues and clicking on them expands them to see the issues. The extension will then search for the div or divs with the text that closely or exactly matches that of the issues selected in the popup and clicks on that div to select it. At least one issue must be selected to continue. The extension will then search for button with the class "css-c6ayu0" and the text "Next: Review & submit" and click it. The extension will wait for the page to change and then search for button with the class "css-c6ayu0" and the text "Submit inspection" and click it.
+    - Once the inspection has been submitted the popup will close and the user will be shown a success notification message if the user has the "Show notifications after submission" preference enabled in the onboarding/settings page.
+
+Fleet portal issue map:
+This is a list of all vehicle issues as displayed by category and sub category and then issue and the issue's related pdf field name/id. Categories have the class of "css-1ropudr". Subcategories have the class of "css-86vfqe". Issues are divs within the class of "css-a8par6".
+Example:
+- Category
+    - Sub Category
+        - Issue - id="PDF FIELD NAME/POPUP ISSUE ID"
+
+- Front Side
+    - Lights and light covers
+        - Hazard light is not working - id="1_lights_1"
+        - Headlight is not working - id="1_lights_2"
+        - Any lights or light covers are cracked (leaving hole or void), missing, or not working properly - id="1_lights_3"
+    - Suspension & underbody shield
+        - Loose or hanging objects underneath - id="1_susp_1"
+        - Noticeable leaning of vehicle (when parked) - id="1_susp_2"
+    - Body and doors
+        - Items attached to the body of the vehicle (for example: bumpers and hood latches) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar - id="1_body_1"
+    - EV system
+        - Orange wires are present: High Voltage! Do not touch! - id="1_ev_1"
+- Passenger Side
+    - Side mirrors
+        - Side mirror glass is cracked, damaged, or missing - id="2_mirror_1"
+        - Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar - id="2_mirror_2"
+        - Side mirrors cannot be adjusted - id="2_mirror_3"
+    - Front tire, wheel and rim
+        - Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface - id="2_ftire_3"
+        - Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken - id="2_ftire_4"
+        - Tire has insufficient tread (Less than 2/32 or 1.6mm) on inner most, middle, or outer most tread - id="2_ftire_1"
+        - Tire has insufficient tread (Less than 4/32 or 3.2mm) on inner most, middle, or outer most tread - id="2_ftire_2"
+    - Back tire, wheel and rim
+        - Tire has insufficient tread (Less than 2/32 or 1.6mm) on inner most, middle, or outer most tread - id="2_btire_1"
+        - Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface - id="2_btire_2"
+        - Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken - id="2_btire_3"
+        - Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar - id="2_btire_4"
+    - Body and doors
+        - Items attached to the body of the vehicle (for example: side view camera or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar - id="2_body_1"
+        - Prime decal is damaged, missing, excessively dirty, or not visible - id="2_body_3"
+        - Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing DOT decals on rental vehicles are not covered and visible - id="2_body_2"
+    - Suspension & underbody shield
+        - Loose or hanging objects underneath - id="2_susp_1"
+    - EV system
+        - Orange wires are present: High Voltage! Do not touch! - id="2_ev_1"
+    - Lights and light covers
+        - Any lights or light covers are cracked (leaving hole or void), missing, or not working properly - id="2_lights_1"
+- Back Side
+    - License plates/tags
+        - License plates/temp tags are damaged, missing, illegible, or expired - id="3_lic_1"
+    - Lights and light covers
+        - Hazard light is not working - id="3_lights_1"
+        - License plate light is not working - id="3_lights_2"
+        - Tail light is not working - id="3_lights_4"
+        - Any lights or light covers are cracked (leaving hole or void), missing, or not working properly - id="3_lights_3"
+    - Suspension & underbody shield
+        - Loose or hanging objects underneath - id="3_susp_1"
+    - EV system
+        - Orange wires are present: High Voltage! Do not touch! - id="3_ev_1"
+    - Body and doors
+        - Items attached to the body of the vehicle (for example: bumper, back-up camera, or rear step) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar - id="3_body_1"
+- Driver Side
+    - Back tire, wheel and rim
+        - Tire has insufficient tread (Less than 2/32 or 1.6mm) on inner most, middle, or outer most tread - id="4_btire_1"
+        - Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface - id="4_btire_2"
+        - Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken - id="4_btire_3"
+        - Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar - id="4_btire_4"
+    - Suspension & underbody shield
+        - Active non-clear fluid leaking on the ground - id="4_susp_1"
+        - Loose or hanging objects underneath - id="4_susp_2"
+    - Front tire, wheel and rim
+        - Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface - id="4_tire_3"
+        - Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken - id="4_tire_4"
+        - Tire has insufficient tread (Less than 2/32 or 1.6mm) on inner most, middle, or outer most tread - id="4_tire_1"
+        - Tire has insufficient tread (Less than 4/32 or 3.2mm) on inner most, middle, or outer most tread - id="4_tire_2"
+    - Side mirrors
+        - Side mirror or window glass is cracked, damaged, or missing - id="4_mirror_1"
+        - Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar - id="4_mirror_2"
+        - Side mirrors cannot be adjusted - id="4_mirror_3"
+    - EV system
+        - Orange wires are present: High Voltage! Do not touch! - id="4_ev_1"
+    - Body and doors
+        - Charging port cap is missing or broken - id="4_ev_2"
+        - Items attached to the body of the vehicle (for example: side view camera or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar - id="4_body_1"
+        - Prime decal is damaged, missing, excessively dirty, or not visible - id="4_body_3"
+        - Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing DOT decals on rental vehicles are not covered and visible - id="4_body_2"
+    - Charging port and fluids
+        - Fuel cap is missing or broken - id="4_susp_3"
+    - Lights and light covers
+        - Any lights or light covers are cracked (leaving hole or void), missing, or not working properly - id="4_lights_1"
+- In Cab
+    - Body and doors
+        - Interior sliding door (bulkhead doors) cannot open or close - id="5_body_2"
+        - Items attached to the body of the vehicle (for example: shelves, floor panels) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar - id="5_body_3"
+        - One or more exterior doors (driver, passenger, cargo, or back door) cannot open, close, lock, or unlock properly from the inside of the vehicle - id="5_body_1"
+    - Camera/monitor
+        - Netradyne camera is hanging/disconnected from bracket - id="5_cam_1"
+        - Rear or side camera monitor is missing, broken, unsecure, obstructed, or not working - id="5_cam_2"
+        - Sensors or cameras are dirty, or a warning light/message is present signaling an issue on the dashboard - id="5_cam_3"
+    - Lights and light covers
+        - Hazard light is not working - id="5_lights_4"
+        - Turn signal is not working - id="5_lights_5"
+        - Any red warning lights/lamps are on or flashing - id="5_lights_1"
+        - Dashboard light is not working - id="5_lights_3"
+        - Any yellow warning lights/lamps are on or flashing - id="5_lights_2"
+    - Safety accessories
+        - Delivery device cradle is damaged, missing, or is mounted with a tape, zip-tie or similar - id="5_safety_1"
+        - Device is not able to be stowed behind dashboard without becoming loose and no device mount is present - id="5_safety_4"
+        - Driver display/center display is blank or not functioning - id="5_safety_5"
+        - Fire extinguisher is missing, not mounted, mounted with a tape, zip-tie or similar, or the dial/needle is not in the green zone - id="5_safety_3"
+    - Windshield
+        - Any crack, chip, stars on the windshield >1/2 inch (excluding 1 inch boarder of windshield) - id="5_windsh_1"
+        - Device/Accessory is mounted on the windshield - id="5_windsh_2"
+    - Wipers
+        - Wiper blades are missing, damaged, or not working - id="5_wipers_2"
+        - Windshield washer system/wiper fluid reservoir is not working - id="5_wipers_1"
+    - Brakes
+        - Foot brake is grinding, vibrates, leaking air, or not working - id="5_brakes_1"
+        - Foot brake is squeaking, loose, weak, or stiff - id="5_brakes_2"
+        - Parking brake is loose, weak, or stiff - id="5_brakes_4"
+        - Parking brake is not working - id="5_brakes_3"
+        - Air pressure gauge read less than 79 lb./in2 (5.5 kg/cm2) - id="5_brakes_5"
+    - HVAC systems
+        - Defroster/heater is not working - id="5_hvac_2"
+        - AC is not blowing cold air - id="5_hvac_1"
+    - Steering, seatbelt, horn and alarm
+        - Horn, backup alarm, or seatbelt alarm is not working - id="5_sha_1"
+        - Seatbelt is missing, torn, frayed, or not working - id="5_sha_2"
+        - Steering wheel has excessive vibration - id="5_sha_3"
+        - Steering wheel is stiff, loose, or needs alignment - id="5_sha_4"
+        - AVAS noise does not sound when vehicle travels under 12 mph - id="5_sha_5"
+- General
+    - Vehicle Documentation
+        - DOT/CA BIT/State Inspection sticker is missing, damaged, illegible, or expired - id="5_docu_1"
+        - Insurance information, registration, short haul exemption, or certification of lease is missing, damaged, illegible, or expired
+    - Saftey accessories - id="5_docu_2"
+        - Spare fuses or reflective triangles are missing - id="5_safety_2"
+        - Fire extinguisher is missing, not mounted, mounted with a tape, zip-tie or similar, or the dial/needle is not in the green zone - id="5_safety_3"
+    - Vehicle Cleanliness
+        - Interior of vehicle has excessive grime, odor, dust, or trash present - id="5_clean_1"
