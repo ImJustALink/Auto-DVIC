@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const vehicleState = document.getElementById('vehicleState');
     const vehicleVin = document.getElementById('vehicleVin');
     const vehicleType = document.getElementById('vehicleType');
+    // Inspection type toggle radios
+    const inspectionTypeRadios = document.getElementsByName('inspectionType');
 
     // Toggle vehicle info section
     infoToggle.addEventListener('click', () => {
@@ -190,9 +192,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     // Form submission handler
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
         // Validate checkbox consistency
         const issueCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="1_"], input[type="checkbox"][id^="2_"], input[type="checkbox"][id^="3_"], input[type="checkbox"][id^="4_"], input[type="checkbox"][id^="5_"]');
         const hasIssues = Array.from(issueCheckboxes).some(checkbox => checkbox.checked);
@@ -210,7 +212,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const inspTimeInput = document.getElementById('inspTime');
         
         // Validate required fields
-        if (!daNameInput.value || !inspectionTypeSelect.value || !inspDateInput.value || !inspTimeInput.value) {
+        let inspectionType = '';
+        for (const radio of inspectionTypeRadios) {
+            if (radio.checked) {
+                inspectionType = radio.value;
+                break;
+            }
+        }
+        if (!daNameInput.value || !inspectionType || !inspDateInput.value || !inspTimeInput.value) {
             statusDiv.textContent = 'Please fill in all required fields';
             statusDiv.className = 'status-error';
             return;
@@ -245,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = {
                 daName: daNameInput.value,
                 transporterId: transporterId,
-                inspectionType: inspectionTypeSelect.value.toLowerCase(), // Just send 'pre' or 'post'
+                inspectionType: inspectionType.toLowerCase(), // Just send 'pre' or 'post'
                 inspDate: inspDateInput.value,
                 inspTime: inspTimeInput.value,
                 satisfyCond: satisfyCondCheckbox.checked,
@@ -257,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             console.log('Form data being prepared:', {
                 ...formData,
-                rawInspectionType: inspectionTypeSelect.value,
+                rawInspectionType: inspectionType,
                 normalizedType: formData.inspectionType,
                 customLocation: diffLocationCheckbox.checked,
                 locationValue: inspLocInput.value
@@ -299,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 data: {
                     daName: daNameInput.value,
                     transporterId: transporterId, // Add transporter ID to message
-                    inspectionType: inspectionTypeSelect.value,
+                    inspectionType: inspectionType,
                     inspDate: inspDateInput.value,
                     inspTime: inspTimeInput.value,
                     satisfyCondition: satisfyCondCheckbox.checked,

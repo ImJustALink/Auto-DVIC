@@ -75,10 +75,12 @@
 
             <div class="form-group">
                 <label for="inspectionType">Inspection Type</label>
-                <select id="inspectionType" name="inspectionType" required>
-                    <option value="pre">Pre-trip</option>
-                    <option value="post">Post-trip</option>
-                </select>
+                <div class="inspection-type-toggle" role="group" aria-labelledby="inspectionTypeLabel">
+                    <input type="radio" id="inspectionTypePre" name="inspectionType" value="pre" required checked>
+                    <label for="inspectionTypePre" class="toggle-btn">Pre-trip</label>
+                    <input type="radio" id="inspectionTypePost" name="inspectionType" value="post" required>
+                    <label for="inspectionTypePost" class="toggle-btn">Post-trip</label>
+                </div>
             </div>
 
             <div class="form-group">

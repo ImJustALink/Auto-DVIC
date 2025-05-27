@@ -32,6 +32,7 @@
     border-radius: 16px;
     padding: 32px;
     margin-bottom: 32px;
+    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.10);
 }
 
 .settings-section h2 {
@@ -45,11 +46,23 @@
     line-height: 1.5;
 }
 
+.important-note {
+    background: #fffbe6;
+    color: #ad8500;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(173, 133, 0, 0.10), 0 1px 4px rgba(0,0,0,0.04);
+}
+
 /* File input styling */
 .file-input-label {
     background-color: var(--primary-color);
     color: white;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(7, 115, 152, 0.10), 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .file-input-label:hover {
@@ -82,6 +95,7 @@
     display: inline-flex;
     align-items: center;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(7, 115, 152, 0.10), 0 1px 3px rgba(0,0,0,0.04);
 }
 
 /* Secondary button styling */
@@ -89,12 +103,13 @@
     background-color: transparent;
     border: 1px solid var(--primary-color);
     color: var(--primary-color);
-    padding: 10px 16px;
-    font-size: 14px;
+    padding: 10px 14px;
+    font-size: 13px;
     font-weight: 600;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(7, 115, 152, 0.10), 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .secondary-button:hover {
@@ -488,4 +503,15 @@ input:checked + .toggle-slider:before {
 .onboarding-footer button {
     max-width: 200px;
     margin: 0 auto;
+    background: var(--primary-color);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 4px 18px rgba(7, 115, 152, 0.18), 0 2px 8px rgba(0,0,0,0.10);
+    border: none;
+    transition: box-shadow 0.2s, background 0.2s;
+}
+
+.onboarding-footer button:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 6px 28px rgba(7, 115, 152, 0.22), 0 3px 12px rgba(0,0,0,0.13);
 }
