@@ -46,7 +46,18 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-.header-content {
+.download-blank-pdf-link {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.download-blank-pdf-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
     display: flex;
     align-items: center;
     gap: 12px;
