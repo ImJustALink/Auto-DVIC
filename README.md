@@ -142,6 +142,7 @@ Auto DVIC/
 - Increased field contrast: all form fields now stand out more from the background for better accessibility.
 - Improved section and field alignment: fixed padding, borders, and box-sizing so all sections and fields are visually aligned and nothing sticks out.
 - Responsive padding: ensured comfortable margins on all screen sizes.
+- Added a blank DVIC PDF download link to the popup interface for users to download the template.
 
 ### v1.1.3 (2025-03-22)
 - Enhanced onboarding experience for first-time users:
