@@ -137,6 +137,12 @@ Auto DVIC/
 
 ## Version History
 
+### v1.1.5 (2026-01-31)
+- Refactored issue mapping system:
+  - Extracted hardcoded mappings to a dedicated `issue-mappings.js` file for better maintainability.
+  - Added automated validation tests to ensure mapping integrity.
+  - Modularized content script architecture.
+
 ### v1.1.4 (2025-05-30)
 - Improved Inspection Type selection: replaced dropdown with toggle button group for clearer, safer choice.
 - Increased field contrast: all form fields now stand out more from the background for better accessibility.
