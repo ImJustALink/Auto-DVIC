@@ -114,7 +114,7 @@
         "5_safety_5": "Driver display/center display is blank or not functioning",
         "5_safety_3": "Fire extinguisher is missing, not mounted, mounted with a tape, zip-tie or similar, or the dial/needle is not in the green zone",
         // Windshield
-        "5_windsh_1": "Any crack, chip, stars on the windshield >1/2 inch (excluding 1 inch boarder of windshield)",
+        "5_windsh_1": "Any crack, chip, stars on the windshield >1/2 inch (excluding 1 inch border of windshield)",
         "5_windsh_2": "Device/Accessory is mounted on the windshield",
         // Wipers
         "5_wipers_2": "Wiper blades are missing, damaged, or not working",
