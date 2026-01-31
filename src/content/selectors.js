@@ -48,8 +48,8 @@
             fileUploadElementBackup: 'a', // Needs text check "Select file to upload"
             fileInput: 'input[type="file"]',
             radioButtons: 'input[type="radio"]',
-            nextButtonClass: 'css-c6ayu0',
-            submitButtonClass: 'css-c6ayu0'
+            nextButtonClass: '.css-c6ayu0',
+            submitButtonClass: '.css-c6ayu0'
         },
         navigation: {
             uploadButtonContainer: '.css-z4yfkz',

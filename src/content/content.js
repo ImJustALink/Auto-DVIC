@@ -655,7 +655,8 @@ async function handleDvicSubmission(formData) {
                 // Find and click the Next button
                 const nextButton = Array.from(document.querySelectorAll('button')).find(btn => {
                     const text = btn.textContent.trim().toLowerCase();
-                    return btn.className.includes(submission.nextButtonClass) && (
+                    // Strip dot for className check
+                    return btn.className.includes(submission.nextButtonClass.substring(1)) && (
                         text.includes('next: review & submit') ||
                         text.includes('next: select defects')
                     );
@@ -685,8 +686,8 @@ async function handleDvicSubmission(formData) {
                         // Wait for all dropdowns to fully expand
                         await new Promise(resolve => setTimeout(resolve, 250));
 
-                        const issues = formData.issues || {};
-                        console.log('Processing issues:', issues);
+                        const formIssues = formData.issues || {};
+                        console.log('Processing issues:', formIssues);
 
                         // Create mapping of issue IDs to their exact text in the fleet portal
                         // Get mappings from global object
@@ -701,7 +702,7 @@ async function handleDvicSubmission(formData) {
                         const unfoundIssues = [];
 
                         // Process each issue
-                        for (const [issueId, issueText] of Object.entries(issues)) {
+                        for (const [issueId, issueText] of Object.entries(formIssues)) {
                             // Get the exact text from our mapping
                             const fleetPortalText = issueMapping[issueId];
                             if (!fleetPortalText) {
@@ -880,7 +881,7 @@ async function handleDvicSubmission(formData) {
                         }
 
                         // If all issues were found, continue with automation
-                        const reviewButton = document.querySelector(`.${submission.nextButtonClass}`);
+                        const reviewButton = document.querySelector(submission.nextButtonClass);
                         if (reviewButton) {
                             console.log('Clicking review button:', reviewButton.textContent.trim());
                             reviewButton.click();
@@ -891,7 +892,7 @@ async function handleDvicSubmission(formData) {
                             // Find and log the final submit button
                             const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
                                 const text = btn.textContent.trim().toLowerCase();
-                                return btn.className.includes(submission.submitButtonClass) && text === 'submit inspection';
+                                return btn.className.includes(submission.submitButtonClass.substring(1)) && text === 'submit inspection';
                             });
 
                             if (submitButton) {
@@ -923,7 +924,7 @@ async function handleDvicSubmission(formData) {
 
                         const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
                             const text = btn.textContent.trim().toLowerCase();
-                            return btn.className.includes(submission.submitButtonClass) && text === 'submit inspection';
+                            return btn.className.includes(submission.submitButtonClass.substring(1)) && text === 'submit inspection';
                         });
 
                         if (submitButton) {
@@ -1361,7 +1362,7 @@ function initialize() {
 
             // Check for attribute changes on tabs
             if (mutation.type === 'attributes' &&
-                (mutation.target.classList.contains(navigation.tabClass.replace('.', '')) ||
+                (mutation.target.classList.contains(navigation.tabClass.substring(1)) ||
                     mutation.target.getAttribute('role') === 'tab')) {
                 handleUrlChange();
                 break;
