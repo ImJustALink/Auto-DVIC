@@ -15,8 +15,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://logistics.amazon.com/*"],
-      "js": ["src/content/content.js"],
+      "matches": [
+        "*://logistics.amazon.com/*"
+      ],
+      "js": [
+        "src/content/issue-mappings.js",
+        "src/content/content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -33,12 +38,16 @@
     "128": "assets/icons/icon128.png"
   },
   "options_page": "src/onboarding/onboarding.html",
-  "web_accessible_resources": [{
-    "resources": [
-      "src/vendor/*",
-      "src/utils/*",
-      "assets/pdf/*"
-    ],
-    "matches": ["<all_urls>"]
-  }]
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/vendor/*",
+        "src/utils/*",
+        "assets/pdf/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }
