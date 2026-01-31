@@ -19,6 +19,7 @@
         "*://logistics.amazon.com/*"
       ],
       "js": [
+        "src/content/selectors.js",
         "src/content/issue-mappings.js",
         "src/content/content.js"
       ],
