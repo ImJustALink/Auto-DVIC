@@ -1,0 +1,15 @@
+{
+    "name": "auto-dvic",
+    "version": "1.1.4",
+    "description": "Chrome extension for automating DVIC form filling and submission",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:verbose": "vitest run --reporter=verbose"
+    },
+    "devDependencies": {
+        "vitest": "^3.0.0"
+    }
+}

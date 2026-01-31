@@ -2,43 +2,45 @@
   "manifest_version": 3,
   "name": "Auto DVIC",
   "version": "1.1.4",
-  "description": "Automates DVIC form filling and submission for Amazon Fleet Portal",
+  "description": "Fills out and submits Amazon DVIC forms automatically",
   "permissions": [
     "activeTab",
     "storage"
   ],
-  "host_permissions": [
-    "*://logistics.amazon.com/fleet-management/*"
-  ],
-  "background": {
-    "service_worker": "src/background/background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["*://logistics.amazon.com/*"],
-      "js": ["src/content/content.js"],
-      "run_at": "document_idle"
-    }
-  ],
   "action": {
+    "default_popup": "src/popup/popup.html",
     "default_icon": {
       "16": "assets/icons/icon16.png",
       "48": "assets/icons/icon48.png",
       "128": "assets/icons/icon128.png"
     }
   },
-  "icons": {
-    "16": "assets/icons/icon16.png",
-    "48": "assets/icons/icon48.png",
-    "128": "assets/icons/icon128.png"
+  "background": {
+    "service_worker": "src/background/background.js"
   },
-  "options_page": "src/onboarding/onboarding.html",
-  "web_accessible_resources": [{
-    "resources": [
-      "src/vendor/*",
-      "src/utils/*",
-      "assets/pdf/*"
-    ],
-    "matches": ["<all_urls>"]
-  }]
+  "content_scripts": [
+    {
+      "matches": [
+        "*://inspection.amazon.com/*",
+        "*://logistics.amazon.com/station/dashboard*"
+      ],
+      "js": [
+        "src/content/content.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/vendor/*",
+        "src/utils/*",
+        "assets/pdf/*",
+        "src/shared/*.js",
+        "src/config/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }

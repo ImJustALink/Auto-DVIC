@@ -1,6 +1,6 @@
 import { fillDVICForm } from '../utils/pdf-handler.js';
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('dvicForm');
     const daNameInput = document.getElementById('daName');
     const inspectionTypeSelect = document.getElementById('inspectionType');
@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const satisfyCondCheckbox = document.getElementById('satisfyCond');
     const issuesContainer = document.getElementById('issuesContainer');
     const statusDiv = document.getElementById('status');
+    const progressContainer = document.getElementById('progress-container');
     const settingsBtn = document.getElementById('settingsBtn');
     const driverList = document.getElementById('driverList');
     const driverTooltip = document.getElementById('driverTooltip');
@@ -41,18 +42,18 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Loading vehicle info from storage');
             const result = await chrome.storage.local.get(['vehicleInfo']);
             console.log('Retrieved from storage:', result);
-            
+
             if (result.vehicleInfo) {
                 const { lic, lic_state, vin, odo, asset_type } = result.vehicleInfo;
                 console.log('Updating popup with vehicle info:', {
                     lic, lic_state, vin, odo, asset_type
                 });
-                
+
                 vehicleLicense.textContent = lic || '-';
                 vehicleState.textContent = lic_state || '-';
                 vehicleVin.textContent = vin || '-';
                 vehicleType.textContent = asset_type || '-';
-                
+
                 // Populate odometer field if available
                 if (odo) {
                     console.log('Setting odometer value:', odo);
@@ -72,16 +73,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for vehicle info updates from content script
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log('Received message in popup:', message);
-        
+
         if (message.action === 'vehicleInfoUpdated' && message.data) {
             console.log('Updating popup with new vehicle info:', message.data);
-            
+
             const { lic, lic_state, vin, odo, asset_type } = message.data;
             vehicleLicense.textContent = lic || '-';
             vehicleState.textContent = lic_state || '-';
             vehicleVin.textContent = vin || '-';
             vehicleType.textContent = asset_type || '-';
-            
+
             // Update odometer field if available
             if (odo) {
                 console.log('Setting new odometer value:', odo);
@@ -89,11 +90,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else if (message.action === 'submissionError') {
             console.error('Submission error:', message.error);
-            progressContainer.style.display = 'none';
+            if (progressContainer) progressContainer.style.display = 'none';
             form.style.opacity = '1';
             form.style.pointerEvents = 'auto';
-            statusDiv.textContent = 'Error during submission: ' + message.error;
-            statusDiv.className = 'status-error';
+            showStatus('error', 'Error during submission', message.error);
         }
     });
 
@@ -103,14 +103,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
     const formattedDate = `${year}-${month}-${day}`;
-    
+
     inspDateInput.value = formattedDate;
     inspDateInput.max = formattedDate; // Prevent future dates
-    
+
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
     inspTimeInput.value = `${hours}:${minutes}`;
-    
+
     console.log('Setting default date and time:', {
         date: formattedDate,
         time: `${hours}:${minutes}`,
@@ -142,6 +142,44 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load driver list on popup open
     loadDriverList();
 
+    // Helper to show enhanced status messages
+    function showStatus(type, message, details = null) {
+        statusDiv.className = `status-${type}`;
+        statusDiv.style.display = 'flex';
+
+        const icon = type === 'error' ? '❌' :
+            type === 'warning' ? '⚠️' :
+                type === 'success' ? '✓' : 'ℹ️';
+
+        let html = `
+            <div class="status-icon">${icon}</div>
+            <div class="status-content">
+                <div>${message}</div>
+        `;
+
+        if (details) {
+            html += `
+                <button class="status-details-toggle" type="button">Show details</button>
+                <div class="status-details">${details}</div>
+            `;
+        }
+
+        html += `</div>`;
+        statusDiv.innerHTML = html;
+
+        if (details) {
+            const toggle = statusDiv.querySelector('.status-details-toggle');
+            const detailsDiv = statusDiv.querySelector('.status-details');
+            if (toggle && detailsDiv) {
+                toggle.addEventListener('click', () => {
+                    const isVisible = detailsDiv.style.display === 'block';
+                    detailsDiv.style.display = isVisible ? 'none' : 'block';
+                    toggle.textContent = isVisible ? 'Show details' : 'Hide details';
+                });
+            }
+        }
+    }
+
     // Check for DSP and Station codes
     async function checkSettings() {
         const { dspCode, stationCode } = await chrome.storage.sync.get({
@@ -150,8 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (!dspCode || !stationCode) {
-            statusDiv.textContent = 'Please set your DSP Code and Station Code in the extension settings before submitting DVICs.';
-            statusDiv.className = 'status-warning';
+            showStatus('warning', 'Please set your DSP Code and Station Code in the extension settings before submitting DVICs.');
             form.querySelector('button[type="submit"]').disabled = true;
         }
     }
@@ -160,9 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
     checkSettings();
 
     // Handle satisfactory condition checkbox
-    satisfyCondCheckbox.addEventListener('change', function() {
+    satisfyCondCheckbox.addEventListener('change', function () {
         issuesContainer.style.display = this.checked ? 'none' : 'block';
-        
+
         // If switching to satisfactory, uncheck all issue checkboxes
         if (this.checked) {
             document.querySelectorAll('input[type="checkbox"][id^="1_"], input[type="checkbox"][id^="2_"], input[type="checkbox"][id^="3_"], input[type="checkbox"][id^="4_"], input[type="checkbox"][id^="5_"]')
@@ -175,13 +212,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle issue checkboxes
     document.querySelectorAll('input[type="checkbox"][id^="1_"], input[type="checkbox"][id^="2_"], input[type="checkbox"][id^="3_"], input[type="checkbox"][id^="4_"], input[type="checkbox"][id^="5_"]')
         .forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
+            checkbox.addEventListener('change', function () {
                 if (this.checked) {
                     // If any issue is checked, uncheck satisfactory condition
                     satisfyCondCheckbox.checked = false;
                     issuesContainer.style.display = 'block';
                 }
-                
+
                 // Log checkbox state for debugging
                 console.log('Issue checkbox changed:', {
                     id: this.id,
@@ -192,25 +229,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     // Form submission handler
-    form.addEventListener('submit', async function(event) {
+    form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
         // Validate checkbox consistency
         const issueCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="1_"], input[type="checkbox"][id^="2_"], input[type="checkbox"][id^="3_"], input[type="checkbox"][id^="4_"], input[type="checkbox"][id^="5_"]');
         const hasIssues = Array.from(issueCheckboxes).some(checkbox => checkbox.checked);
-        
+
         if (hasIssues && satisfyCondCheckbox.checked) {
-            statusDiv.textContent = 'Error: Cannot mark issues and satisfy all conditions';
-            statusDiv.className = 'status-error';
+            showStatus('error', 'Cannot mark issues and satisfy all conditions');
             return;
         }
-        
+
         // Get form inputs
         const daNameInput = document.getElementById('daName');
         const inspectionTypeSelect = document.getElementById('inspectionType');
         const inspDateInput = document.getElementById('inspDate');
         const inspTimeInput = document.getElementById('inspTime');
-        
+
         // Validate required fields
         let inspectionType = '';
         for (const radio of inspectionTypeRadios) {
@@ -220,18 +256,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         if (!daNameInput.value || !inspectionType || !inspDateInput.value || !inspTimeInput.value) {
-            statusDiv.textContent = 'Please fill in all required fields';
-            statusDiv.className = 'status-error';
+            showStatus('error', 'Please fill in all required fields');
             return;
         }
-        
+
         try {
             // Get DSP and Station codes from sync storage
             const { dspCode, stationCode } = await chrome.storage.sync.get({
                 dspCode: '',
                 stationCode: ''
             });
-            
+
             if (!dspCode || !stationCode) {
                 throw new Error('DSP Code and Station Code are required. Please set them in the extension settings.');
             }
@@ -245,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get transporter ID from datalist
             const driverOption = Array.from(driverList.options).find(opt => opt.value === daNameInput.value);
             const transporterId = driverOption ? driverOption.dataset.transporterId : '';
-            
+
             if (!transporterId) {
                 throw new Error('Transporter ID not found for selected driver. Please make sure the driver is in the list.');
             }
@@ -271,13 +306,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 customLocation: diffLocationCheckbox.checked,
                 locationValue: inspLocInput.value
             });
-            
+
             // Create a separate issues object and maintain checkbox states
             const issues = {};
             issueCheckboxes.forEach(checkbox => {
                 // Keep the original checkbox state for PDF handling
                 formData[checkbox.id] = checkbox.checked;
-                
+
                 // Add to issues object if checked (for fleet portal)
                 if (checkbox.checked) {
                     const label = document.querySelector(`label[for="${checkbox.id}"]`);
@@ -290,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Fill and save PDF
             const result = await fillDVICForm(formData);
-            
+
             // Auto-download to downloads folder
             const downloadLink = document.createElement('a');
             downloadLink.href = result.url;
@@ -301,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Clean up the URL
             setTimeout(() => URL.revokeObjectURL(result.url), 100);
-            
+
             // Send message to background script to start submission
             chrome.runtime.sendMessage({
                 action: 'startSubmission',
@@ -315,19 +350,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     issues: formData.issues // Send the issues object with descriptions
                 }
             });
-            
+
             // Close the popup after a short delay to ensure download starts
             setTimeout(() => window.close(), 500);
-            
+
         } catch (error) {
             console.error('Error processing form:', error);
-            statusDiv.textContent = 'Error: ' + (error.message || 'Unknown error occurred');
-            statusDiv.className = 'status-error';
+            showStatus('error', error.message || 'Unknown error occurred', error.stack);
         }
     });
 
     // Handle different location checkbox
-    diffLocationCheckbox.addEventListener('change', function() {
+    diffLocationCheckbox.addEventListener('change', function () {
         locationGroup.style.display = this.checked ? 'block' : 'none';
         inspLocInput.required = this.checked;
         if (!this.checked) {
@@ -336,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle settings button click
-    settingsBtn.addEventListener('click', function() {
+    settingsBtn.addEventListener('click', function () {
         chrome.runtime.openOptionsPage();
     });
 
@@ -345,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', () => {
             const content = button.nextElementSibling;
             const isActive = button.classList.contains('active');
-            
+
             // Close other sections
             document.querySelectorAll('.section-toggle.active').forEach(activeButton => {
                 if (activeButton !== button) {
@@ -353,11 +387,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     activeButton.nextElementSibling.classList.remove('active');
                 }
             });
-            
+
             // Toggle current section
             button.classList.toggle('active');
             content.classList.toggle('active');
-            
+
             // Scroll section into view if opening
             if (!isActive) {
                 button.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -366,16 +400,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Notify content script when popup is closing
-    window.addEventListener('beforeunload', function() {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    window.addEventListener('beforeunload', function () {
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             if (tabs[0]) {
-                chrome.tabs.sendMessage(tabs[0].id, {action: 'popupClosed'});
+                chrome.tabs.sendMessage(tabs[0].id, { action: 'popupClosed' });
             }
         });
     });
 
     // Listen for storage changes to update driver list
-    chrome.storage.onChanged.addListener(function(changes, namespace) {
+    chrome.storage.onChanged.addListener(function (changes, namespace) {
         if (namespace === 'local' && changes.driverList) {
             loadDriverList();
         }

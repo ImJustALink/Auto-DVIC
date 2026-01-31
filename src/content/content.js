@@ -1,19 +1,48 @@
 // Initialize Chrome storage
 const storage = chrome.storage || browser.storage;
 
+// Output debug message
+console.log('Auto DVIC: Content script loaded');
+
+// Load selectors configuration
+let SELECTORS = {}, TIMING = {}, TEXT_PATTERNS = {};
+
+// Initialize configuration
+(async () => {
+    try {
+        const configUrl = chrome.runtime.getURL('src/config/selectors.js');
+        console.log('Auto DVIC: Loading configuration from', configUrl);
+        const config = await import(configUrl);
+
+        SELECTORS = config.SELECTORS;
+        TIMING = config.TIMING;
+        TEXT_PATTERNS = config.TEXT_PATTERNS;
+
+        console.log('Auto DVIC: Configuration loaded successfully');
+
+        // Initialize the extension after config is loaded
+        initialize();
+    } catch (error) {
+        console.error('Auto DVIC: Failed to load configuration:', error);
+    }
+})();
+
+
+
 // Function to gather vehicle information
 function gatherVehicleInfo() {
     console.log('Starting vehicle info gathering...');
 
     // First try to find the main container
-    const mainContainer = document.querySelector('.css-qodthi');
+    const mainContainer = document.querySelector(SELECTORS.MAIN_CONTAINER);
     if (!mainContainer) {
         console.error('Main container not found');
+        showError('Page Error', 'Main vehicle info container not found. Please ensure you are on the correct Amazon Fleet Portal page.');
         return null;
     }
 
     // Get all pill items
-    const pillItems = mainContainer.querySelectorAll('[class*="pill-item"]');
+    const pillItems = mainContainer.querySelectorAll(SELECTORS.PILL_ITEMS);
     console.log(`Found ${pillItems.length} pill items`);
 
     // Helper function to get text from a specific pill item
@@ -30,7 +59,7 @@ function gatherVehicleInfo() {
     // Get license plate and state from second pill (index 1)
     const licensePillText = getPillText(1);
     console.log('License pill text:', licensePillText);
-    
+
     // Split on parentheses to separate plate and state
     const parts = licensePillText.split('(');
     const license = parts[0].trim();
@@ -43,16 +72,16 @@ function gatherVehicleInfo() {
     // Get mileage from fifth pill (index 4)
     const mileageText = getPillText(4);
     console.log('Checking mileage text:', mileageText);
-    
+
     let mileage = '';
     let assetType = '';
-    
+
     // Only process mileage and asset type if mileage starts with numbers
     if (/^\d/.test(mileageText)) {
         console.log('Valid mileage format found');
         const mileageMatch = mileageText.match(/(\d+)\s*miles/);
         mileage = mileageMatch ? mileageMatch[1] : '';
-        
+
         // Only get asset type if we have valid mileage
         if (mileage) {
             assetType = getPillText(5);
@@ -86,37 +115,39 @@ async function handleDvicSubmission(formData) {
         isPostTrip: formData.inspectionType === 'Post-Trip' || formData.inspectionType.toLowerCase() === 'post',
         rawValue: formData.inspectionType
     });
-    
+
     try {
         // Find and click the upload inspection button
-        const uploadButton = Array.from(document.querySelectorAll('button')).find(btn => 
-            btn.textContent.trim().toLowerCase() === 'upload inspection'
+        const uploadButton = Array.from(document.querySelectorAll('button')).find(btn =>
+            btn.textContent.trim().toLowerCase() === TEXT_PATTERNS.UPLOAD_INSPECTION
         );
-        
+
         if (!uploadButton) {
+            showError('Missing Button', 'Could not find the "Upload Inspection" button. The page layout may have changed.');
             throw new Error('Upload inspection button not found');
         }
-        
+
         // Click the upload button
         uploadButton.click();
         console.log('Clicked upload inspection button');
-        
+
         // Wait for upload dialog to appear
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        await new Promise(resolve => setTimeout(resolve, TIMING.DIALOG_LOAD));
+
         // Find file upload element
-        const fileUploadElement = document.querySelector('.css-1b9zydf') || 
-            Array.from(document.querySelectorAll('a')).find(a => 
-                a.textContent.trim().toLowerCase() === 'select file to upload'
+        const fileUploadElement = document.querySelector(SELECTORS.FILE_UPLOAD_ELEMENT) ||
+            Array.from(document.querySelectorAll('a')).find(a =>
+                a.textContent.trim().toLowerCase() === SELECTORS.FILE_UPLOAD_LINK_TEXT
             );
-        
+
         if (!fileUploadElement) {
+            showError('Upload Error', 'Could not find the file upload area. Please try refreshing the page.');
             throw new Error('File upload element not found');
         }
 
         // Get element position
         const rect = fileUploadElement.getBoundingClientRect();
-        
+
         // Create dimming overlay (split into two parts)
         const topOverlay = document.createElement('div');
         topOverlay.style.cssText = `
@@ -129,7 +160,7 @@ async function handleDvicSubmission(formData) {
             z-index: 9999;
             transition: opacity 0.3s ease;
         `;
-        
+
         const bottomOverlay = document.createElement('div');
         bottomOverlay.style.cssText = `
             position: fixed;
@@ -141,7 +172,7 @@ async function handleDvicSubmission(formData) {
             z-index: 9999;
             transition: opacity 0.3s ease;
         `;
-        
+
         const leftOverlay = document.createElement('div');
         leftOverlay.style.cssText = `
             position: fixed;
@@ -153,7 +184,7 @@ async function handleDvicSubmission(formData) {
             z-index: 9999;
             transition: opacity 0.3s ease;
         `;
-        
+
         const rightOverlay = document.createElement('div');
         rightOverlay.style.cssText = `
             position: fixed;
@@ -165,12 +196,12 @@ async function handleDvicSubmission(formData) {
             z-index: 9999;
             transition: opacity 0.3s ease;
         `;
-        
+
         document.body.appendChild(topOverlay);
         document.body.appendChild(bottomOverlay);
         document.body.appendChild(leftOverlay);
         document.body.appendChild(rightOverlay);
-        
+
         // Create highlight effect
         const highlight = document.createElement('div');
         highlight.style.cssText = `
@@ -185,7 +216,7 @@ async function handleDvicSubmission(formData) {
             pointer-events: none;
             animation: pulse 2s infinite;
         `;
-        
+
         // Add pulse animation
         const style = document.createElement('style');
         style.textContent = `
@@ -197,7 +228,7 @@ async function handleDvicSubmission(formData) {
         `;
         document.head.appendChild(style);
         document.body.appendChild(highlight);
-        
+
         // Create floating message
         const message = document.createElement('div');
         message.style.cssText = `
@@ -217,7 +248,7 @@ async function handleDvicSubmission(formData) {
         `;
         message.textContent = 'Please select the DVIC PDF that was just downloaded';
         document.body.appendChild(message);
-        
+
         // Remove elements when file input changes or after timeout
         const cleanup = () => {
             highlight.remove();
@@ -228,35 +259,35 @@ async function handleDvicSubmission(formData) {
             message.remove();
             style.remove();
         };
-        
+
         // Add listener for file selection
-        const fileInput = document.querySelector('input[type="file"]');
+        const fileInput = document.querySelector(SELECTORS.FILE_INPUT);
         if (fileInput) {
             fileInput.addEventListener('change', async () => {
                 // Clean up overlay
                 cleanup();
-                
+
                 // Wait for file upload to process
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
+                await new Promise(resolve => setTimeout(resolve, TIMING.FILE_PROCESS));
+
                 // Set inspection type if post-trip
-                const isPostTrip = formData.inspectionType === 'Post-Trip' || 
-                                 formData.inspectionType.toLowerCase() === 'post';
+                const isPostTrip = formData.inspectionType === 'Post-Trip' ||
+                    formData.inspectionType.toLowerCase() === 'post';
                 console.log('Checking inspection type:', {
                     formDataType: formData.inspectionType,
                     isPostTrip,
                     typeComparison: formData.inspectionType === 'Post-Trip',
                     lowercaseComparison: formData.inspectionType.toLowerCase() === 'post'
                 });
-                
+
                 if (isPostTrip) {
                     console.log('Attempting to select Post-Trip inspection type...');
-                    
+
                     // Wait for radio buttons to be available
                     await new Promise(resolve => setTimeout(resolve, 100));
-                    
+
                     // Find all radio buttons first
-                    const allRadios = document.querySelectorAll('input[type="radio"]');
+                    const allRadios = document.querySelectorAll(SELECTORS.RADIO_INPUTS);
                     console.log('Found radio buttons:', Array.from(allRadios).map(r => ({
                         value: r.value,
                         name: r.name,
@@ -266,13 +297,13 @@ async function handleDvicSubmission(formData) {
                         class: r.className,
                         parentText: r.parentElement?.textContent?.trim()
                     })));
-                    
+
                     // Try to find post-trip radio
-                    const postTripRadio = Array.from(allRadios).find(radio => 
-                        radio.value === 'POST_TRIP_DVIC' && 
-                        radio.name === 'inspectionType'
+                    const postTripRadio = Array.from(allRadios).find(radio =>
+                        radio.value === SELECTORS.POST_TRIP_RADIO_VALUE &&
+                        radio.name === SELECTORS.INSPECTION_TYPE_RADIO_NAME
                     );
-                    
+
                     if (postTripRadio) {
                         console.log('Found post-trip radio:', {
                             value: postTripRadio.value,
@@ -280,7 +311,7 @@ async function handleDvicSubmission(formData) {
                             checked: postTripRadio.checked,
                             ariaChecked: postTripRadio.getAttribute('aria-checked')
                         });
-                        
+
                         try {
                             // Try multiple selection methods
                             const methods = [
@@ -306,8 +337,8 @@ async function handleDvicSubmission(formData) {
                                 },
                                 // Method 4: Click label
                                 async () => {
-                                    const label = postTripRadio.closest('label') || 
-                                                document.querySelector(`label[for="${postTripRadio.id}"]`);
+                                    const label = postTripRadio.closest('label') ||
+                                        document.querySelector(`label[for="${postTripRadio.id}"]`);
                                     if (label) {
                                         label.click();
                                         console.log('Method 4: Clicked label');
@@ -315,7 +346,7 @@ async function handleDvicSubmission(formData) {
                                     await new Promise(resolve => setTimeout(resolve, 200));
                                 }
                             ];
-                            
+
                             // Try each method in sequence
                             for (const method of methods) {
                                 await method();
@@ -325,61 +356,64 @@ async function handleDvicSubmission(formData) {
                                     break;
                                 }
                             }
-                            
+
                             // Final verification
-                            await new Promise(resolve => setTimeout(resolve, 500));
+                            await new Promise(resolve => setTimeout(resolve, TIMING.UI_UPDATE));
                             console.log('Final radio state:', {
                                 checked: postTripRadio.checked,
                                 ariaChecked: postTripRadio.getAttribute('aria-checked')
                             });
-                            
+
                         } catch (err) {
                             console.error('Error selecting post-trip:', err);
+                            showWarning('Selection Error', 'Could not automatically select Post-Trip inspection. Please select it manually.');
                         }
                     } else {
                         console.error('Post-trip radio button not found');
+                        showWarning('Selection Error', 'Post-trip radio button not found. Please select inspection type manually.');
                     }
                 }
-                
+
                 // Wait for any animations or state updates
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
+                await new Promise(resolve => setTimeout(resolve, TIMING.UI_UPDATE));
+
                 // Fill in driver name with autocomplete handling
                 async function fillDriverName(retryCount = 0) {
                     console.log(`Attempting to fill driver name (attempt ${retryCount + 1})`);
-                    
+
                     // Only find the input field on first attempt
                     if (retryCount === 0) {
-                        const driverNameInput = document.querySelector('.css-1geyss9 input') || 
-                                             document.querySelector('#select-68');
-                        
+                        const driverNameInput = document.querySelector(SELECTORS.DRIVER_NAME_INPUT) ||
+                            document.querySelector(SELECTORS.DRIVER_NAME_INPUT_ALT);
+
                         if (!driverNameInput) {
                             console.error('Driver input not found');
+                            showError('Form Error', 'Driver name input field not found.');
                             throw new Error('Driver name input not found');
                         }
-                        
+
                         console.log('Found driver input field');
-                        
+
                         // Store the input field for retries
                         fillDriverName.inputField = driverNameInput;
-                        
+
                         // Focus and click the input
                         driverNameInput.focus();
                         driverNameInput.click();
                     }
-                    
+
                     const driverNameInput = fillDriverName.inputField;
-                    
+
                     // Set the value and trigger input event
                     driverNameInput.value = formData.daName;
                     driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    
+
                     console.log('Set driver name:', formData.daName);
                     console.log('Expected transporter ID:', formData.transporterId);
-                    
+
                     // Function to verify transporter ID
                     const verifyTransporterId = () => {
-                        const transporterInput = document.querySelector('input[class="css-ys1hc6"][placeholder="Transporter ID"]');
+                        const transporterInput = document.querySelector(SELECTORS.TRANSPORTER_ID_INPUT);
                         if (!transporterInput) {
                             console.log('Transporter ID input not found');
                             return false;
@@ -388,16 +422,16 @@ async function handleDvicSubmission(formData) {
                         // Extract the transporter ID from the input
                         const currentTransporterId = transporterInput.value.trim();
                         const expectedTransporterId = formData.transporterId.trim();
-                        
+
                         console.log('Current transporter ID:', currentTransporterId);
                         console.log('Expected transporter ID:', expectedTransporterId);
-                        
+
                         // If either ID is empty, return false
                         if (!currentTransporterId || !expectedTransporterId) {
                             console.log('One or both transporter IDs are empty');
                             return false;
                         }
-                        
+
                         // Compare the IDs
                         const isMatch = currentTransporterId === expectedTransporterId;
                         console.log('Transporter ID match:', isMatch);
@@ -431,14 +465,14 @@ async function handleDvicSubmission(formData) {
                         await new Promise(resolve => setTimeout(resolve, 300));
 
                         // Make sure aria-expanded is set
-                        const input = container.querySelector('input[role="combobox"]');
+                        const input = container.querySelector(SELECTORS.COMBOBOX_INPUT);
                         if (input) {
                             input.setAttribute('aria-expanded', 'true');
                             input.setAttribute('aria-haspopup', 'true');
                         }
 
                         // Get options and log them
-                        const options = Array.from(document.querySelectorAll('[role="option"]'));
+                        const options = Array.from(document.querySelectorAll(SELECTORS.COMBOBOX_OPTIONS));
                         options.forEach((opt, i) => {
                             console.log(`Option ${i + 1}:`, opt.textContent);
                         });
@@ -472,10 +506,10 @@ async function handleDvicSubmission(formData) {
                                 // Click the next option
                                 options[currentAttempt].click();
                                 console.log(`Trying driver option ${currentAttempt + 1} of ${options.length}`);
-                                
+
                                 // Wait for selection to take effect
                                 await new Promise(resolve => setTimeout(resolve, 300));
-                                
+
                                 // Check if this selection is correct
                                 if (verifyTransporterId()) {
                                     console.log('Found matching driver with correct transporter ID');
@@ -483,7 +517,7 @@ async function handleDvicSubmission(formData) {
                                     resolve();
                                     return;
                                 }
-                                
+
                                 // Try next option if not resolved
                                 if (!isResolved) {
                                     currentAttempt++;
@@ -526,7 +560,7 @@ async function handleDvicSubmission(formData) {
                             );
 
                             // Watch for changes to the transporter ID field
-                            const transporterInput = document.querySelector('input[class="css-ys1hc6"][placeholder="Transporter ID"]');
+                            const transporterInput = document.querySelector(SELECTORS.TRANSPORTER_ID_INPUT);
                             if (transporterInput) {
                                 const observer = new MutationObserver(async () => {
                                     if (isResolved) {
@@ -556,7 +590,7 @@ async function handleDvicSubmission(formData) {
                         tryDriver();
                     });
                 }
-                
+
                 // Try to fill driver name with retry
                 try {
                     console.log('Starting driver name fill process');
@@ -564,13 +598,13 @@ async function handleDvicSubmission(formData) {
                 } catch (error) {
                     console.error('Error in driver name fill process:', error);
                 }
-                
+
                 // Fill in date
                 const dateInput = Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
                     const label = input.getAttribute('aria-label') || '';
                     return label.toLowerCase().includes('inspection date');
                 });
-                
+
                 if (dateInput) {
                     // Parse the date parts directly to avoid timezone issues
                     const [year, month, day] = formData.inspDate.split('-').map(Number);
@@ -578,51 +612,51 @@ async function handleDvicSubmission(formData) {
                     dateInput.value = formattedDate;
                     dateInput.dispatchEvent(new Event('input', { bubbles: true }));
                     console.log('Filled in date:', formattedDate);
-                    
+
                     // Wait for UI to update
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, TIMING.UI_UPDATE));
                 }
-                
+
                 // Fill in time
                 const timeInput = document.querySelector('input[type="time"]') ||
-                                Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
-                                    const label = input.getAttribute('aria-label') || '';
-                                    const placeholder = input.getAttribute('placeholder') || '';
-                                    return label.toLowerCase().includes('inspection time') ||
-                                           placeholder.toLowerCase().includes('time') ||
-                                           input.id?.toLowerCase().includes('time');
-                                });
-                
+                    Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
+                        const label = input.getAttribute('aria-label') || '';
+                        const placeholder = input.getAttribute('placeholder') || '';
+                        return label.toLowerCase().includes('inspection time') ||
+                            placeholder.toLowerCase().includes('time') ||
+                            input.id?.toLowerCase().includes('time');
+                    });
+
                 if (timeInput) {
                     // Parse the time
                     const [hours, minutes] = formData.inspTime.split(':');
                     const hour = parseInt(hours, 10);
-                    
+
                     // Format time as HHMMam/pm (no colon, no spaces)
                     const hour12 = hour % 12 || 12;
                     const ampm = hour < 12 ? 'AM' : 'PM';
                     const formattedTime = `${hour12.toString().padStart(2, '0')}${minutes}${ampm}`;
-                    
+
                     timeInput.value = formattedTime;
                     timeInput.dispatchEvent(new Event('input', { bubbles: true }));
                     console.log('Filled in time:', formattedTime);
-                    
+
                     // Wait for UI to update
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, TIMING.UI_UPDATE));
                 }
-                
+
                 // Handle defects radio selection after all inputs are filled
                 console.log('Handling defects radio selection...');
-                const allRadios = document.querySelectorAll('input[type="radio"]');
-                const defectsRadios = Array.from(allRadios).filter(radio => 
-                    radio.name === 'defectsFoundQues'
+                const allRadios = document.querySelectorAll(SELECTORS.RADIO_INPUTS);
+                const defectsRadios = Array.from(allRadios).filter(radio =>
+                    radio.name === SELECTORS.DEFECTS_RADIO_NAME
                 );
-                
+
                 if (defectsRadios.length === 2) {
                     // Check if there are any issues selected
                     const hasIssues = formData.issues && Object.keys(formData.issues).length > 0;
                     console.log('Checking for issues:', { hasIssues, issues: formData.issues });
-                    
+
                     // If no issues were selected, select "No"
                     if (!hasIssues) {
                         const noDefectsRadio = defectsRadios.find(radio => radio.value === 'false');
@@ -642,545 +676,58 @@ async function handleDvicSubmission(formData) {
                     }
                 } else {
                     console.error('Could not find defects radio buttons');
+                    showWarning('Form Warning', 'Could not find defects radio buttons. Please select defects manually.');
                 }
-                
+
                 // Wait for any animations or state updates
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
+                await new Promise(resolve => setTimeout(resolve, TIMING.UI_UPDATE));
+
                 // Find and click the Next button
                 const nextButton = Array.from(document.querySelectorAll('button')).find(btn => {
                     const text = btn.textContent.trim().toLowerCase();
-                    return btn.className.includes('css-c6ayu0') && (
-                        text.includes('next: review & submit') || 
-                        text.includes('next: select defects')
+                    return btn.className.includes(SELECTORS.NEXT_BUTTON) && (
+                        text.includes(TEXT_PATTERNS.NEXT_REVIEW_SUBMIT) ||
+                        text.includes(TEXT_PATTERNS.NEXT_SELECT_DEFECTS)
                     );
                 });
-                
+
                 if (nextButton) {
                     console.log('Clicking next button:', nextButton.textContent.trim());
                     nextButton.click();
-                    
+
                     // If we have issues, handle the issue selection page
                     if (formData.issues && Object.keys(formData.issues).length > 0) {
                         console.log('Issues found, waiting for defects page to load...');
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await new Promise(resolve => setTimeout(resolve, TIMING.DEFECTS_PAGE_LOAD));
 
                         // First expand all dropdowns
-                        const dropdowns = document.querySelectorAll('.css-1lne09z');
+                        const dropdowns = document.querySelectorAll(SELECTORS.DROPDOWNS);
                         console.log('Found dropdowns to expand:', dropdowns.length);
 
                         for (const dropdown of dropdowns) {
                             const expandButton = dropdown.firstElementChild;
                             if (expandButton) {
                                 expandButton.click();
-                                await new Promise(resolve => setTimeout(resolve, 100));
+                                await new Promise(resolve => setTimeout(resolve, TIMING.DROPDOWN_EXPAND));
                             }
                         }
 
                         // Wait for all dropdowns to fully expand
-                        await new Promise(resolve => setTimeout(resolve, 250));
+                        await new Promise(resolve => setTimeout(resolve, TIMING.DROPDOWN_SETTLE));
 
                         const issues = formData.issues || {};
                         console.log('Processing issues:', issues);
 
-                        // Create mapping of issue IDs to their exact text in the fleet portal
-                        const issueMapping = {
-                            // Front Side
-                            // Lights and light covers
-                            "1_lights_1": "Hazard light is not working",
-                            "1_lights_2": "Headlight is not working",
-                            "1_lights_3": "Any lights or light covers are cracked (leaving hole or void), missing, or not working properly",
-                            // Suspension & underbody shield
-                            "1_susp_1": "Loose or hanging objects underneath",
-                            "1_susp_2": "Noticeable leaning of vehicle (when parked)",
-                            // Body and doors
-                            "1_body_1": "Items attached to the body of the vehicle (for example: bumpers and hood latches) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar",
-                            // EV system
-                            "1_ev_1": "Orange wires are present: High Voltage! Do not touch!",
+                        // Import shared mappings
+                        // Note: content.js is injected, so we need access to the module
+                        // The build process or import mechanism needs to handle this
+                        const { issueMapping, categoryMapping, validateMappings } = await import(chrome.runtime.getURL('src/shared/issue-definitions.js'));
 
-                            // Passenger Side
-                            // Side mirrors
-                            "2_mirror_1": "Side mirror glass is cracked, damaged, or missing",
-                            "2_mirror_2": "Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar",
-                            "2_mirror_3": "Side mirrors cannot be adjusted",
-                            // Front tire, wheel and rim
-                            "2_ftire_3": "Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface",
-                            "2_ftire_4": "Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken",
-                            "2_ftire_1": "Tire has insufficient tread (Less than 2/32 or 1.6mm) on inner most, middle, or outer most tread",
-                            "2_ftire_2": "Tire has insufficient tread (Less than 4/32 or 3.2mm) on inner most, middle, or outer most tread",
-                            // Back tire, wheel and rim
-                            "2_btire_1": "Tire has insufficient tread (Less than 2/32 or 1.6mm) on inner most, middle, or outer most tread",
-                            "2_btire_2": "Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface",
-                            "2_btire_3": "Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken",
-                            "2_btire_4": "Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar",
-                            // Body and doors
-                            "2_body_1": "Items attached to the body of the vehicle (for example: side view camera or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar",
-                            "2_body_3": "Prime decal is damaged, missing, excessively dirty, or not visible",
-                            "2_body_2": "Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing DOT decals on rental vehicles are not covered and visible",
-                            // Suspension & underbody shield
-                            "2_susp_1": "Loose or hanging objects underneath",
-                            // EV system
-                            "2_ev_1": "Orange wires are present: High Voltage! Do not touch!",
-                            // Lights and light covers
-                            "2_lights_1": "Any lights or light covers are cracked (leaving hole or void), missing, or not working properly",
-
-                            // Back Side
-                            // License plates/tags
-                            "3_lic_1": "License plates/temp tags are damaged, missing, illegible, or expired",
-                            // Lights and light covers
-                            "3_lights_1": "Hazard light is not working",
-                            "3_lights_2": "License plate light is not working",
-                            "3_lights_4": "Tail light is not working",
-                            "3_lights_3": "Any lights or light covers are cracked (leaving hole or void), missing, or not working properly",
-                            // Suspension & underbody shield
-                            "3_susp_1": "Loose or hanging objects underneath",
-                            // EV system
-                            "3_ev_1": "Orange wires are present: High Voltage! Do not touch!",
-                            // Body and doors
-                            "3_body_1": "Items attached to the body of the vehicle (for example: bumper, back-up camera, or rear step) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar",
-
-                            // Driver Side
-                            // Back tire, wheel and rim
-                            "4_btire_1": "Tire has insufficient tread (Less than 2/32 or 1.6mm) on inner most, middle, or outer most tread",
-                            "4_btire_2": "Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface",
-                            "4_btire_3": "Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken",
-                            "4_btire_4": "Mud Flap is damaged, missing, unsecured or held up with a zip-tie, tape or similar",
-                            // Suspension & underbody shield
-                            "4_susp_1": "Active non-clear fluid leaking on the ground",
-                            "4_susp_2": "Loose or hanging objects underneath",
-                            // Front tire, wheel and rim
-                            "4_tire_3": "Tire has objects, cuts, dents, swells, leaks, appears flat, or exposed wire on surface",
-                            "4_tire_4": "Wheel, wheel nuts, rim, or mounting equipment is damaged, cracked, loose, missing, or broken",
-                            "4_tire_1": "Tire has insufficient tread (Less than 2/32 or 1.6mm) on inner most, middle, or outer most tread",
-                            "4_tire_2": "Tire has insufficient tread (Less than 4/32 or 3.2mm) on inner most, middle, or outer most tread",
-                            // Side mirrors
-                            "4_mirror_1": "Side mirror or window glass is cracked, damaged, or missing",
-                            "4_mirror_2": "Side mirrors are loose, hanging, unsecured, or held up with a zip-tie, tape, or similar",
-                            "4_mirror_3": "Side mirrors cannot be adjusted",
-                            // EV system
-                            "4_ev_1": "Orange wires are present: High Voltage! Do not touch!",
-                            // Body and doors
-                            "4_ev_2": "Charging port cap is missing or broken",
-                            "4_body_1": "Items attached to the body of the vehicle (for example: side view camera or cargo steps) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar",
-                            "4_body_3": "Prime decal is damaged, missing, excessively dirty, or not visible",
-                            "4_body_2": "Amazon DOT decal (USDOT2881058) is damaged, missing, excessively dirty, or not visible, or any existing DOT decals on rental vehicles are not covered and visible",
-                            // Charging port and fluids
-                            "4_susp_3": "Fuel cap is missing or broken",
-                            // Lights and light covers
-                            "4_lights_1": "Any lights or light covers are cracked (leaving hole or void), missing, or not working properly",
-
-                            // In Cab
-                            // Body and doors
-                            "5_body_2": "Interior sliding door (bulkhead doors) cannot open or close",
-                            "5_body_3": "Items attached to the body of the vehicle (for example: shelves, floor panels) are missing, damaged, loose, unsecure, hanging, or held with a zip-tie, tape, or similar",
-                            "5_body_1": "One or more exterior doors (driver, passenger, cargo, or back door) cannot open, close, lock, or unlock properly from the inside of the vehicle",
-                            // Camera/monitor
-                            "5_cam_1": "Netradyne camera is hanging/disconnected from bracket",
-                            "5_cam_2": "Rear or side camera monitor is missing, broken, unsecure, obstructed, or not working",
-                            "5_cam_3": "Sensors or cameras are dirty, or a warning light/message is present signaling an issue on the dashboard",
-                            // Lights and light covers
-                            "5_lights_4": "Hazard light is not working",
-                            "5_lights_5": "Turn signal is not working",
-                            "5_lights_1": "Any red warning lights/lamps are on or flashing",
-                            "5_lights_3": "Dashboard light is not working",
-                            "5_lights_2": "Any yellow warning lights/lamps are on or flashing",
-                            // Safety accessories
-                            "5_safety_1": "Delivery device cradle is damaged, missing, or is mounted with a tape, zip-tie or similar",
-                            "5_safety_4": "Device is not able to be stowed behind dashboard without becoming loose and no device mount is present",
-                            "5_safety_5": "Driver display/center display is blank or not functioning",
-                            "5_safety_3": "Fire extinguisher is missing, not mounted, mounted with a tape, zip-tie or similar, or the dial/needle is not in the green zone",
-                            // Windshield
-                            "5_windsh_1": "Any crack, chip, stars on the windshield >1/2 inch (excluding 1 inch boarder of windshield)",
-                            "5_windsh_2": "Device/Accessory is mounted on the windshield",
-                            // Wipers
-                            "5_wipers_2": "Wiper blades are missing, damaged, or not working",
-                            "5_wipers_1": "Windshield washer system/wiper fluid reservoir is not working",
-                            // Brakes
-                            "5_brakes_1": "Foot brake is grinding, vibrates, leaking air, or not working",
-                            "5_brakes_2": "Foot brake is squeaking, loose, weak, or stiff",
-                            "5_brakes_4": "Parking brake is loose, weak, or stiff",
-                            "5_brakes_3": "Parking brake is not working",
-                            "5_brakes_5": "Air pressure gauge read less than 79 lb./in2 (5.5 kg/cm2)",
-                            // HVAC systems
-                            "5_hvac_2": "Defroster/heater is not working",
-                            "5_hvac_1": "AC is not blowing cold air",
-                            // Steering, seatbelt, horn and alarm
-                            "5_sha_1": "Horn, backup alarm, or seatbelt alarm is not working",
-                            "5_sha_2": "Seatbelt is missing, torn, frayed, or not working",
-                            "5_sha_3": "Steering wheel has excessive vibration",
-                            "5_sha_4": "Steering wheel is stiff, loose, or needs alignment",
-                            "5_sha_5": "AVAS noise does not sound when vehicle travels under 12 mph",
-
-                            // General
-                            // Vehicle Documentation
-                            "5_docu_1": "DOT/CA BIT/State Inspection sticker is missing, damaged, illegible, or expired",
-                            "5_docu_2": "Insurance information, registration, short haul exemption, or certification of lease is missing, damaged, illegible, or expired",
-                            // Safety accessories
-                            "5_safety_2": "Spare fuses or reflective triangles are missing",
-                            // Vehicle Cleanliness
-                            "5_clean_1": "Interior of vehicle has excessive grime, odor, dust, or trash present"
-                        };
-
-                        // Create mapping structure for categories and subcategories
-                        const categoryMapping = {
-                            // Front Side
-                            "1_lights_1": {
-                                category: "Front Side",
-                                subcategory: "Lights and light covers"
-                            },
-                            "1_lights_2": {
-                                category: "Front Side",
-                                subcategory: "Lights and light covers"
-                            },
-                            "1_lights_3": {
-                                category: "Front Side",
-                                subcategory: "Lights and light covers"
-                            },
-                            "1_susp_1": {
-                                category: "Front Side",
-                                subcategory: "Suspension & underbody shield"
-                            },
-                            "1_susp_2": {
-                                category: "Front Side",
-                                subcategory: "Suspension & underbody shield"
-                            },
-                            "1_body_1": {
-                                category: "Front Side",
-                                subcategory: "Body and doors"
-                            },
-                            "1_ev_1": {
-                                category: "Front Side",
-                                subcategory: "EV system"
-                            },
-
-                            // Passenger Side
-                            "2_mirror_1": {
-                                category: "Passenger Side",
-                                subcategory: "Side mirrors"
-                            },
-                            "2_mirror_2": {
-                                category: "Passenger Side",
-                                subcategory: "Side mirrors"
-                            },
-                            "2_mirror_3": {
-                                category: "Passenger Side",
-                                subcategory: "Side mirrors"
-                            },
-                            "2_ftire_1": {
-                                category: "Passenger Side",
-                                subcategory: "Front tire, wheel and rim"
-                            },
-                            "2_ftire_2": {
-                                category: "Passenger Side",
-                                subcategory: "Front tire, wheel and rim"
-                            },
-                            "2_ftire_3": {
-                                category: "Passenger Side",
-                                subcategory: "Front tire, wheel and rim"
-                            },
-                            "2_ftire_4": {
-                                category: "Passenger Side",
-                                subcategory: "Front tire, wheel and rim"
-                            },
-                            "2_btire_1": {
-                                category: "Passenger Side",
-                                subcategory: "Back tire, wheel and rim"
-                            },
-                            "2_btire_2": {
-                                category: "Passenger Side",
-                                subcategory: "Back tire, wheel and rim"
-                            },
-                            "2_btire_3": {
-                                category: "Passenger Side",
-                                subcategory: "Back tire, wheel and rim"
-                            },
-                            "2_btire_4": {
-                                category: "Passenger Side",
-                                subcategory: "Back tire, wheel and rim"
-                            },
-                            "2_body_1": {
-                                category: "Passenger Side",
-                                subcategory: "Body and doors"
-                            },
-                            "2_body_2": {
-                                category: "Passenger Side",
-                                subcategory: "Body and doors"
-                            },
-                            "2_body_3": {
-                                category: "Passenger Side",
-                                subcategory: "Body and doors"
-                            },
-                            "2_susp_1": {
-                                category: "Passenger Side",
-                                subcategory: "Suspension & underbody shield"
-                            },
-                            "2_ev_1": {
-                                category: "Passenger Side",
-                                subcategory: "EV system"
-                            },
-                            "2_lights_1": {
-                                category: "Passenger Side",
-                                subcategory: "Lights and light covers"
-                            },
-
-                            // Back Side
-                            "3_lic_1": {
-                                category: "Back Side",
-                                subcategory: "License plates/tags"
-                            },
-                            "3_lights_1": {
-                                category: "Back Side",
-                                subcategory: "Lights and light covers"
-                            },
-                            "3_lights_2": {
-                                category: "Back Side",
-                                subcategory: "Lights and light covers"
-                            },
-                            "3_lights_3": {
-                                category: "Back Side",
-                                subcategory: "Lights and light covers"
-                            },
-                            "3_lights_4": {
-                                category: "Back Side",
-                                subcategory: "Lights and light covers"
-                            },
-                            "3_susp_1": {
-                                category: "Back Side",
-                                subcategory: "Suspension & underbody shield"
-                            },
-                            "3_ev_1": {
-                                category: "Back Side",
-                                subcategory: "EV system"
-                            },
-                            "3_body_1": {
-                                category: "Back Side",
-                                subcategory: "Body and doors"
-                            },
-
-                            // Driver Side
-                            "4_btire_1": {
-                                category: "Driver Side",
-                                subcategory: "Back tire, wheel and rim"
-                            },
-                            "4_btire_2": {
-                                category: "Driver Side",
-                                subcategory: "Back tire, wheel and rim"
-                            },
-                            "4_btire_3": {
-                                category: "Driver Side",
-                                subcategory: "Back tire, wheel and rim"
-                            },
-                            "4_btire_4": {
-                                category: "Driver Side",
-                                subcategory: "Back tire, wheel and rim"
-                            },
-                            "4_susp_1": {
-                                category: "Driver Side",
-                                subcategory: "Suspension & underbody shield"
-                            },
-                            "4_susp_2": {
-                                category: "Driver Side",
-                                subcategory: "Suspension & underbody shield"
-                            },
-                            "4_tire_1": {
-                                category: "Driver Side",
-                                subcategory: "Front tire, wheel and rim"
-                            },
-                            "4_tire_2": {
-                                category: "Driver Side",
-                                subcategory: "Front tire, wheel and rim"
-                            },
-                            "4_tire_3": {
-                                category: "Driver Side",
-                                subcategory: "Front tire, wheel and rim"
-                            },
-                            "4_tire_4": {
-                                category: "Driver Side",
-                                subcategory: "Front tire, wheel and rim"
-                            },
-                            "4_mirror_1": {
-                                category: "Driver Side",
-                                subcategory: "Side mirrors"
-                            },
-                            "4_mirror_2": {
-                                category: "Driver Side",
-                                subcategory: "Side mirrors"
-                            },
-                            "4_mirror_3": {
-                                category: "Driver Side",
-                                subcategory: "Side mirrors"
-                            },
-                            "4_ev_1": {
-                                category: "Driver Side",
-                                subcategory: "EV system"
-                            },
-                            "4_ev_2": {
-                                category: "Driver Side",
-                                subcategory: "Charging port and fluids"
-                            },
-                            "4_body_1": {
-                                category: "Driver Side",
-                                subcategory: "Body and doors"
-                            },
-                            "4_body_2": {
-                                category: "Driver Side",
-                                subcategory: "Body and doors"
-                            },
-                            "4_body_3": {
-                                category: "Driver Side",
-                                subcategory: "Body and doors"
-                            },
-                            "4_susp_3": {
-                                category: "Driver Side",
-                                subcategory: "Charging port and fluids"
-                            },
-                            "4_lights_1": {
-                                category: "Driver Side",
-                                subcategory: "Lights and light covers"
-                            },
-
-                            // In Cab
-                            "5_body_1": {
-                                category: "In Cab",
-                                subcategory: "Body and doors"
-                            },
-                            "5_body_2": {
-                                category: "In Cab",
-                                subcategory: "Body and doors"
-                            },
-                            "5_body_3": {
-                                category: "In Cab",
-                                subcategory: "Body and doors"
-                            },
-                            "5_cam_1": {
-                                category: "In Cab",
-                                subcategory: "Camera/monitor"
-                            },
-                            "5_cam_2": {
-                                category: "In Cab",
-                                subcategory: "Camera/monitor"
-                            },
-                            "5_cam_3": {
-                                category: "In Cab",
-                                subcategory: "Camera/monitor"
-                            },
-                            "5_lights_1": {
-                                category: "In Cab",
-                                subcategory: "Lights and light covers"
-                            },
-                            "5_lights_2": {
-                                category: "In Cab",
-                                subcategory: "Lights and light covers"
-                            },
-                            "5_lights_3": {
-                                category: "In Cab",
-                                subcategory: "Lights and light covers"
-                            },
-                            "5_lights_4": {
-                                category: "In Cab",
-                                subcategory: "Lights and light covers"
-                            },
-                            "5_lights_5": {
-                                category: "In Cab",
-                                subcategory: "Lights and light covers"
-                            },
-                            "5_safety_1": {
-                                category: "In Cab",
-                                subcategory: "Safety accessories"
-                            },
-                            "5_safety_2": {
-                                category: "General",
-                                subcategory: "Safety accessories"
-                            },
-                            "5_safety_3": {
-                                category: "In Cab",
-                                subcategory: "Safety accessories"
-                            },
-                            "5_safety_4": {
-                                category: "In Cab",
-                                subcategory: "Safety accessories"
-                            },
-                            "5_safety_5": {
-                                category: "In Cab",
-                                subcategory: "Safety accessories"
-                            },
-                            "5_windsh_1": {
-                                category: "In Cab",
-                                subcategory: "Windshield"
-                            },
-                            "5_windsh_2": {
-                                category: "In Cab",
-                                subcategory: "Windshield"
-                            },
-                            "5_wipers_1": {
-                                category: "In Cab",
-                                subcategory: "Wipers"
-                            },
-                            "5_wipers_2": {
-                                category: "In Cab",
-                                subcategory: "Wipers"
-                            },
-                            "5_brakes_1": {
-                                category: "In Cab",
-                                subcategory: "Brakes"
-                            },
-                            "5_brakes_2": {
-                                category: "In Cab",
-                                subcategory: "Brakes"
-                            },
-                            "5_brakes_3": {
-                                category: "In Cab",
-                                subcategory: "Brakes"
-                            },
-                            "5_brakes_4": {
-                                category: "In Cab",
-                                subcategory: "Brakes"
-                            },
-                            "5_brakes_5": {
-                                category: "In Cab",
-                                subcategory: "Brakes"
-                            },
-                            "5_hvac_1": {
-                                category: "In Cab",
-                                subcategory: "HVAC systems"
-                            },
-                            "5_hvac_2": {
-                                category: "In Cab",
-                                subcategory: "HVAC systems"
-                            },
-                            "5_sha_1": {
-                                category: "In Cab",
-                                subcategory: "Steering, seatbelt, horn and alarm"
-                            },
-                            "5_sha_2": {
-                                category: "In Cab",
-                                subcategory: "Steering, seatbelt, horn and alarm"
-                            },
-                            "5_sha_3": {
-                                category: "In Cab",
-                                subcategory: "Steering, seatbelt, horn and alarm"
-                            },
-                            "5_sha_4": {
-                                category: "In Cab",
-                                subcategory: "Steering, seatbelt, horn and alarm"
-                            },
-                            "5_sha_5": {
-                                category: "In Cab",
-                                subcategory: "Steering, seatbelt, horn and alarm"
-                            },
-                            "5_docu_1": {
-                                category: "General",
-                                subcategory: "Vehicle Documentation"
-                            },
-                            "5_docu_2": {
-                                category: "General",
-                                subcategory: "Vehicle Documentation"
-                            },
-                            "5_clean_1": {
-                                category: "General",
-                                subcategory: "Vehicle Cleanliness"
-                            }
-                        };
+                        // Run validation on load to warn about any inconsistencies
+                        const validation = validateMappings();
+                        if (!validation.valid) {
+                            console.warn('Auto DVIC Issue Mapping Warnings:', validation.errors);
+                        }
 
                         // Keep track of issues we couldn't find
                         const unfoundIssues = [];
@@ -1191,6 +738,7 @@ async function handleDvicSubmission(formData) {
                             const fleetPortalText = issueMapping[issueId];
                             if (!fleetPortalText) {
                                 console.error('No fleet portal text mapping found for issue:', issueId);
+                                showWarning('Mapping Issue', `Could not find mapping for issue ID: ${issueId}. It may need manual selection.`);
                                 continue;
                             }
 
@@ -1198,6 +746,7 @@ async function handleDvicSubmission(formData) {
                             const mappingInfo = categoryMapping[issueId];
                             if (!mappingInfo) {
                                 console.error('No category/subcategory mapping found for issue:', issueId);
+                                showWarning('Mapping Issue', `No category defined for issue ID: ${issueId}.`);
                                 continue;
                             }
 
@@ -1211,15 +760,15 @@ async function handleDvicSubmission(formData) {
                             let found = false;
 
                             // Find all category sections
-                            const categoryContainers = document.querySelectorAll('.css-ly5121');
+                            const categoryContainers = document.querySelectorAll(SELECTORS.CATEGORY_CONTAINERS);
                             console.log('Found category sections:', categoryContainers.length);
 
                             // Search through each category section
                             for (const container of categoryContainers) {
                                 // Find the category text - try multiple selectors since the structure might vary
                                 let categoryText = '';
-                                const categoryDiv = container.querySelector('.css-1ropudr');
-                                
+                                const categoryDiv = container.querySelector(SELECTORS.CATEGORY_DIV);
+
                                 if (categoryDiv) {
                                     categoryText = categoryDiv.textContent?.trim();
                                 } else {
@@ -1239,14 +788,14 @@ async function handleDvicSubmission(formData) {
                                     console.log('Found matching category:', categoryText);
 
                                     // Get the parent category container
-                                    const categoryContainer = categoryDiv.closest('.css-ly5121');
+                                    const categoryContainer = categoryDiv.closest(SELECTORS.CATEGORY_CONTAINERS);
                                     if (!categoryContainer) {
                                         console.log('Could not find category container');
                                         continue;
                                     }
 
                                     // Find subcategories in this category container
-                                    const subcategories = categoryContainer.querySelectorAll('.css-86vfqe');
+                                    const subcategories = categoryContainer.querySelectorAll(SELECTORS.SUBCATEGORIES);
                                     console.log('Found subcategories in category:', subcategories.length);
 
                                     // Find the matching subcategory
@@ -1266,7 +815,7 @@ async function handleDvicSubmission(formData) {
                                     console.log('Found matching subcategory:', mappingInfo.subcategory);
 
                                     // Find the issues container
-                                    const issuesContainer = categoryContainer.querySelector('.css-z5nhup');
+                                    const issuesContainer = categoryContainer.querySelector(SELECTORS.ISSUES_CONTAINER);
                                     if (!issuesContainer) {
                                         console.log('Could not find issues container');
                                         continue;
@@ -1275,7 +824,7 @@ async function handleDvicSubmission(formData) {
                                     console.log('Found issues container');
 
                                     // Find the fieldset containing the issues
-                                    const issuesFieldset = issuesContainer.querySelector('.css-1ce8hpl');
+                                    const issuesFieldset = issuesContainer.querySelector(SELECTORS.ISSUES_FIELDSET);
                                     if (!issuesFieldset) {
                                         console.log('Could not find issues fieldset');
                                         continue;
@@ -1284,7 +833,7 @@ async function handleDvicSubmission(formData) {
                                     console.log('Found issues fieldset');
 
                                     // Find all issue elements in the fieldset
-                                    const issueElements = issuesFieldset.querySelectorAll('.css-a8par6');
+                                    const issueElements = issuesFieldset.querySelectorAll(SELECTORS.ISSUE_ELEMENTS);
                                     console.log('Found issue elements:', issueElements.length);
 
                                     // Look for exact text match in each issue element
@@ -1369,16 +918,16 @@ async function handleDvicSubmission(formData) {
                         if (reviewButton) {
                             console.log('Clicking review button:', reviewButton.textContent.trim());
                             reviewButton.click();
-                            
+
                             // Wait for review page to load
                             await new Promise(resolve => setTimeout(resolve, 1000));
-                            
+
                             // Find and log the final submit button
                             const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
                                 const text = btn.textContent.trim().toLowerCase();
                                 return btn.className.includes('css-c6ayu0') && text === 'submit inspection';
                             });
-                            
+
                             if (submitButton) {
                                 console.log('Found submit button:', {
                                     text: submitButton.textContent.trim(),
@@ -1386,7 +935,7 @@ async function handleDvicSubmission(formData) {
                                     disabled: submitButton.disabled,
                                     type: submitButton.type
                                 });
-                                
+
                                 // Check if development mode is enabled
                                 const { devMode } = await chrome.storage.sync.get({ devMode: false });
                                 if (devMode) {
@@ -1398,19 +947,21 @@ async function handleDvicSubmission(formData) {
                                 }
                             } else {
                                 console.error('Could not find submit button');
+                                showError('Submit Error', 'Could not find the final "Submit Inspection" button.');
                             }
                         } else {
                             console.error('Could not find review button');
+                            showError('Navigation Error', 'Could not find the "Review" button.');
                         }
                     } else {
                         // No issues case - wait for page change and log submit
                         await new Promise(resolve => setTimeout(resolve, 1000));
-                        
+
                         const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
                             const text = btn.textContent.trim().toLowerCase();
                             return btn.className.includes('css-c6ayu0') && text === 'submit inspection';
                         });
-                        
+
                         if (submitButton) {
                             console.log('Found submit button:', {
                                 text: submitButton.textContent.trim(),
@@ -1418,7 +969,7 @@ async function handleDvicSubmission(formData) {
                                 disabled: submitButton.disabled,
                                 type: submitButton.type
                             });
-                            
+
                             // Check if development mode is enabled
                             const { devMode } = await chrome.storage.sync.get({ devMode: false });
                             if (devMode) {
@@ -1430,103 +981,290 @@ async function handleDvicSubmission(formData) {
                             }
                         } else {
                             console.error('Could not find submit button');
+                            showError('Submit Error', 'Could not find the "Submit Inspection" button.');
                         }
                     }
                 } else {
                     console.error('Next button not found');
+                    showError('Navigation Error', 'Could not find the "Next" button.');
                 }
             });
         }
-        
+
         // Cleanup after 30 seconds
         setTimeout(cleanup, 30000);
-        
+
     } catch (error) {
         console.error('Error in submission flow:', error);
-        chrome.runtime.sendMessage({ 
+        showError('Submission Error', `An error occurred: ${error.message}`, error.stack);
+        chrome.runtime.sendMessage({
             action: 'submissionError',
             error: error.message
         });
     }
 }
 
-// Function to show custom alert
-function showCustomAlert(title, message) {
-    // Create alert container
-    const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = `
+// =====================================================
+// NOTIFICATION SYSTEM
+// =====================================================
+
+// Notification type configurations
+const NOTIFICATION_TYPES = {
+    error: {
+        borderColor: '#dc3545',
+        titleColor: '#dc3545',
+        icon: '❌',
+        buttonBg: '#dc3545',
+        duration: 15000
+    },
+    warning: {
+        borderColor: '#e47911',
+        titleColor: '#e47911',
+        icon: '⚠️',
+        buttonBg: '#e47911',
+        duration: 10000
+    },
+    info: {
+        borderColor: '#077398',
+        titleColor: '#077398',
+        icon: 'ℹ️',
+        buttonBg: '#077398',
+        duration: 7000
+    },
+    success: {
+        borderColor: '#28a745',
+        titleColor: '#28a745',
+        icon: '✓',
+        buttonBg: '#28a745',
+        duration: 5000
+    }
+};
+
+// Track active notifications for stacking
+let activeNotifications = [];
+const NOTIFICATION_GAP = 10;
+const NOTIFICATION_TOP_OFFSET = 20;
+
+// Calculate the top position for a new notification
+function getNextNotificationTop() {
+    if (activeNotifications.length === 0) {
+        return NOTIFICATION_TOP_OFFSET;
+    }
+
+    let maxBottom = NOTIFICATION_TOP_OFFSET;
+    activeNotifications.forEach(notification => {
+        if (document.body.contains(notification)) {
+            const rect = notification.getBoundingClientRect();
+            maxBottom = Math.max(maxBottom, rect.bottom + NOTIFICATION_GAP);
+        }
+    });
+
+    return maxBottom;
+}
+
+// Remove a notification and reposition remaining ones
+function removeNotification(notification) {
+    const index = activeNotifications.indexOf(notification);
+    if (index > -1) {
+        activeNotifications.splice(index, 1);
+    }
+
+    if (document.body.contains(notification)) {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(20px)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+            repositionNotifications();
+        }, 300);
+    }
+}
+
+// Reposition notifications after one is removed
+function repositionNotifications() {
+    let currentTop = NOTIFICATION_TOP_OFFSET;
+    activeNotifications.forEach(notification => {
+        if (document.body.contains(notification)) {
+            notification.style.top = `${currentTop}px`;
+            const rect = notification.getBoundingClientRect();
+            currentTop = currentTop + rect.height + NOTIFICATION_GAP;
+        }
+    });
+}
+
+/**
+ * Show a notification to the user
+ * @param {string} type - 'error', 'warning', 'info', or 'success'
+ * @param {string} title - Notification title
+ * @param {string} message - Notification message
+ * @param {Object} options - Optional: { duration, details }
+ */
+function showNotification(type, title, message, options = {}) {
+    const style = NOTIFICATION_TYPES[type] || NOTIFICATION_TYPES.info;
+    const duration = options.duration !== undefined ? options.duration : style.duration;
+
+    const notification = document.createElement('div');
+    notification.className = `auto-dvic-notification auto-dvic-notification-${type}`;
+    notification.style.cssText = `
         position: fixed;
-        top: 20px;
+        top: ${getNextNotificationTop()}px;
         right: 20px;
         max-width: 400px;
+        min-width: 300px;
         background: white;
-        border: 2px solid #e47911;
+        border: 2px solid ${style.borderColor};
+        border-left-width: 4px;
         border-radius: 8px;
         padding: 16px;
-        z-index: 10000;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 10001;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        opacity: 0;
+        transform: translateX(20px);
+        transition: opacity 0.3s ease, transform 0.3s ease, top 0.3s ease;
     `;
 
-    // Add title
+    // Header with icon, title, and close button
+    const header = document.createElement('div');
+    header.style.cssText = `display: flex; align-items: center; gap: 8px; margin-bottom: 8px;`;
+
+    const icon = document.createElement('span');
+    icon.style.cssText = `font-size: 18px;`;
+    icon.textContent = style.icon;
+
     const titleDiv = document.createElement('div');
-    titleDiv.style.cssText = `
-        font-weight: bold;
-        font-size: 16px;
-        margin-bottom: 8px;
-        color: #e47911;
-    `;
+    titleDiv.style.cssText = `font-weight: 600; font-size: 15px; color: ${style.titleColor}; flex: 1;`;
     titleDiv.textContent = title;
 
-    // Add message
-    const messageDiv = document.createElement('div');
-    messageDiv.style.cssText = `
-        margin-bottom: 16px;
-        white-space: pre-wrap;
-        color: #333;
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = `
+        background: none; border: none; font-size: 16px; color: #666;
+        cursor: pointer; padding: 0; line-height: 1; opacity: 0.6;
     `;
+    closeBtn.onmouseover = () => closeBtn.style.opacity = '1';
+    closeBtn.onmouseout = () => closeBtn.style.opacity = '0.6';
+    closeBtn.onclick = () => removeNotification(notification);
+
+    header.appendChild(icon);
+    header.appendChild(titleDiv);
+    header.appendChild(closeBtn);
+
+    // Message
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `color: #333; font-size: 14px; line-height: 1.5;`;
     messageDiv.textContent = message;
 
-    // Add close button
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Close';
-    closeButton.style.cssText = `
-        background: #e47911;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        float: right;
-    `;
-    closeButton.onclick = () => document.body.removeChild(alertDiv);
+    notification.appendChild(header);
+    notification.appendChild(messageDiv);
 
-    // Assemble alert
-    alertDiv.appendChild(titleDiv);
-    alertDiv.appendChild(messageDiv);
-    alertDiv.appendChild(closeButton);
-    document.body.appendChild(alertDiv);
+    // Optional details section
+    if (options.details) {
+        const detailsToggle = document.createElement('button');
+        detailsToggle.textContent = 'Show details';
+        detailsToggle.style.cssText = `
+            background: none; border: none; color: #666; font-size: 12px;
+            cursor: pointer; padding: 0; margin-top: 8px; text-decoration: underline;
+        `;
 
-    // Auto-remove after 10 seconds
-    setTimeout(() => {
-        if (document.body.contains(alertDiv)) {
-            document.body.removeChild(alertDiv);
-        }
-    }, 10000);
+        const detailsDiv = document.createElement('div');
+        detailsDiv.style.cssText = `
+            display: none; background: #f5f5f5; padding: 8px; border-radius: 4px;
+            font-family: monospace; font-size: 11px; color: #666; margin-top: 8px;
+            max-height: 100px; overflow-y: auto; word-break: break-word;
+        `;
+        detailsDiv.textContent = options.details;
+
+        detailsToggle.onclick = () => {
+            const isVisible = detailsDiv.style.display !== 'none';
+            detailsDiv.style.display = isVisible ? 'none' : 'block';
+            detailsToggle.textContent = isVisible ? 'Show details' : 'Hide details';
+        };
+
+        notification.appendChild(detailsToggle);
+        notification.appendChild(detailsDiv);
+    }
+
+    // Add to DOM and track
+    document.body.appendChild(notification);
+    activeNotifications.push(notification);
+
+    // Animate in
+    requestAnimationFrame(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    });
+
+    // Auto-dismiss
+    if (duration > 0) {
+        setTimeout(() => removeNotification(notification), duration);
+    }
+
+    // Log to console
+    const logMethod = type === 'error' ? 'error' : type === 'warning' ? 'warn' : 'log';
+    console[logMethod](`[Auto DVIC ${type.toUpperCase()}]`, title, message, options.details || '');
+
+    return notification;
+}
+
+// Convenience functions
+function showError(title, message, details = null) {
+    return showNotification('error', title, message, { details });
+}
+
+function showWarning(title, message, details = null) {
+    return showNotification('warning', title, message, { details });
+}
+
+function showInfo(title, message) {
+    return showNotification('info', title, message);
+}
+
+function showSuccess(title, message) {
+    return showNotification('success', title, message);
+}
+
+// Legacy function for backward compatibility
+function showCustomAlert(title, message) {
+    return showNotification('warning', title, message);
 }
 
 // Listen for messages from background script
+// Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log('Content script received message:', message);
-    
+
     if (message.action === 'startSubmission') {
         handleDvicSubmission(message.data).catch(error => {
             console.error('Submission error:', error);
-            chrome.runtime.sendMessage({ 
+            showError('Submission Error', error.message, error.stack);
+            chrome.runtime.sendMessage({
                 action: 'submissionError',
                 error: error.message
             });
         });
+    } else if (message.action === 'gatherVehicleInfo') {
+        console.log('Received gatherVehicleInfo request');
+        try {
+            const info = gatherVehicleInfo();
+            if (info) {
+                chrome.runtime.sendMessage({
+                    action: 'vehicleInfoUpdated',
+                    data: info
+                });
+                showSuccess('Vehicle Info', 'Successfully gathered vehicle information');
+            } else {
+                showWarning('Vehicle Info', 'Could not gather all vehicle information');
+            }
+        } catch (error) {
+            console.error('Error gathering vehicle info:', error);
+            showError('Vehicle Discovery Error', error.message, error.stack);
+        }
+    } else if (message.action === 'showAlert') {
+        showNotification('info', message.title, message.message);
+    } else if (message.action === 'popupClosed') {
+        console.log('Popup closed');
     }
 });
 
@@ -1566,7 +1304,7 @@ function createAutoDvicButton() {
         button.style.transform = 'translateY(-1px)';
         button.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
     });
-    
+
     button.addEventListener('mouseout', () => {
         button.style.backgroundColor = '#077398';
         button.style.transform = 'none';
@@ -1578,7 +1316,7 @@ function createAutoDvicButton() {
         try {
             console.log('Button clicked, gathering info...');
             const vehicleInfo = gatherVehicleInfo();
-            
+
             if (!vehicleInfo) {
                 throw new Error('Failed to gather vehicle information');
             }
@@ -1586,17 +1324,17 @@ function createAutoDvicButton() {
             // Store vehicle info
             await storage.local.set({ vehicleInfo });
             console.log('Successfully stored vehicle info:', vehicleInfo);
-            
+
             // Visual feedback
             const originalText = button.textContent;
             button.textContent = '✓ Info Gathered';
             button.style.backgroundColor = '#10b981';
-            
+
             // Tell background script to store current tab ID and open popup
-            chrome.runtime.sendMessage({ 
+            chrome.runtime.sendMessage({
                 action: 'openPopupFromPage'
             });
-            
+
             setTimeout(() => {
                 button.textContent = originalText;
                 button.style.backgroundColor = '#077398';
@@ -1605,7 +1343,7 @@ function createAutoDvicButton() {
             console.error('Error:', error.message);
             button.textContent = '❌ Error';
             button.style.backgroundColor = '#ef4444';
-            
+
             setTimeout(() => {
                 button.textContent = 'Auto DVIC';
                 button.style.backgroundColor = '#077398';
@@ -1644,7 +1382,7 @@ function isVehicleDetailsPage() {
     }
 
     // Check if the "Inspections" tab is active by looking for the radio input
-    const radioInputs = document.querySelectorAll('input[type="radio"][role="tab"]');
+    const radioInputs = document.querySelectorAll(SELECTORS.TAB_RADIO_INPUTS);
     for (const input of radioInputs) {
         // Check if this is the Inspections tab input and it's active
         if (input.value === 'INSPECTIONS' && input.tabIndex === 0) {
@@ -1659,27 +1397,27 @@ function isVehicleDetailsPage() {
 // Function to find and inject button
 function findAndInjectButton() {
     // Don't add if button already exists
-    if (document.querySelector('.auto-dvic-container')) {
+    if (document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER)) {
         return false;
     }
 
     let uploadButton = null;
-    
+
     // First try the specific CSS selector
-    const cssElements = document.querySelectorAll('.css-z4yfkz');
+    const cssElements = document.querySelectorAll(SELECTORS.UPLOAD_BUTTONS);
     for (const element of cssElements) {
-        if (element.textContent.trim() === 'Upload inspection') {
+        if (element.textContent.trim() === TEXT_PATTERNS.UPLOAD_INSPECTION) {
             uploadButton = element;
             break;
         }
     }
-    
+
     // If not found, look for button with span containing text
     if (!uploadButton) {
         const buttons = document.querySelectorAll('button');
         for (const button of buttons) {
             const span = button.querySelector('span');
-            if (span && span.textContent.trim() === 'Upload inspection') {
+            if (span && span.textContent.trim() === TEXT_PATTERNS.UPLOAD_INSPECTION) {
                 uploadButton = button;
                 break;
             }
@@ -1741,14 +1479,14 @@ function handleUrlChange() {
     if (currentUrl === lastUrl) {
         return;
     }
-    
+
     console.log('URL changed to:', currentUrl);
     lastUrl = currentUrl;
-    
+
     // Reset injection state on URL change
     injectionInProgress = false;
     checkAndAddButton();
-    
+
     // Set up periodic checks for a short time after URL change
     clearTimeout(periodicCheckTimer);
     setupPeriodicButtonCheck();
@@ -1758,11 +1496,11 @@ function handleUrlChange() {
 function setupPeriodicButtonCheck() {
     // Clear any existing timer
     clearTimeout(periodicCheckTimer);
-    
+
     let checkCount = 0;
     const maxChecks = 5;
     const checkInterval = 1000; // 1 second between checks
-    
+
     const performCheck = () => {
         // Stop checking if we've reached max attempts or if we're not on a vehicle page
         if (checkCount >= maxChecks || !isVehicleDetailsPage()) {
@@ -1770,12 +1508,12 @@ function setupPeriodicButtonCheck() {
             clearTimeout(periodicCheckTimer);
             return;
         }
-        
+
         checkCount++;
-        
+
         // Check if button already exists
-        const buttonExists = document.querySelector('.auto-dvic-container') !== null;
-        
+        const buttonExists = document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER) !== null;
+
         // If we're on a vehicle page but the button isn't present, try again
         if (!buttonExists && !injectionInProgress) {
             console.log(`Periodic check ${checkCount}: Button not found, triggering injection`);
@@ -1783,11 +1521,11 @@ function setupPeriodicButtonCheck() {
         } else {
             console.log(`Periodic check ${checkCount}: ${buttonExists ? 'Button already exists' : 'Injection in progress'}`);
         }
-        
+
         // Schedule next check
         periodicCheckTimer = setTimeout(performCheck, checkInterval);
     };
-    
+
     // Start the periodic checks
     periodicCheckTimer = setTimeout(performCheck, checkInterval);
 }
@@ -1806,48 +1544,48 @@ function initialize() {
 
     // Initial button check
     checkAndAddButton();
-    
+
     // Set up initial periodic check
     setupPeriodicButtonCheck();
 
     // Set up URL change listeners
     window.addEventListener('popstate', handleUrlChange);
     window.addEventListener('hashchange', handleUrlChange);
-    
+
     // Listen for navigation events that might not trigger the above
     window.addEventListener('load', () => {
         injectionInProgress = false;
         checkAndAddButton();
     });
-    
+
     // Set up tab change detection
     setupTabChangeDetection();
-    
+
     // Watch for specific DOM changes that might indicate navigation
     const navObserver = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
             // Look for changes to navigation elements
-            if (mutation.target.classList && 
-                (mutation.target.classList.contains('nav') || 
-                 mutation.target.classList.contains('menu') ||
-                 mutation.target.tagName === 'NAV')) {
+            if (mutation.target.classList &&
+                (mutation.target.classList.contains('nav') ||
+                    mutation.target.classList.contains('menu') ||
+                    mutation.target.tagName === 'NAV')) {
                 console.log('Navigation element changed, checking URL');
                 handleUrlChange();
                 break;
             }
-            
+
             // Check for attribute changes on tabs
-            if (mutation.type === 'attributes' && 
-                (mutation.target.classList.contains('css-14dbfau') || 
-                 mutation.target.getAttribute('role') === 'tab')) {
+            if (mutation.type === 'attributes' &&
+                (mutation.target.classList.contains(SELECTORS.TAB_CLASS_ALT.replace('.', '')) ||
+                    mutation.target.getAttribute('role') === 'tab')) {
                 handleUrlChange();
                 break;
             }
         }
     });
-    
+
     // Try to find navigation elements to observe
-    const navElements = document.querySelectorAll('nav, .nav, .menu, [role="navigation"]');
+    const navElements = document.querySelectorAll(SELECTORS.NAV_ELEMENTS);
     if (navElements.length > 0) {
         console.log(`Found ${navElements.length} navigation elements to observe`);
         navElements.forEach(nav => {
@@ -1867,33 +1605,33 @@ function initialize() {
             handleUrlChange();
             return;
         }
-        
+
         // Check for significant DOM changes that might indicate content loading
         let significantChanges = false;
-        
+
         for (const mutation of mutations) {
             // Look for added nodes that might be the main content
             if (mutation.addedNodes.length > 0) {
                 for (const node of mutation.addedNodes) {
-                    if (node.nodeType === Node.ELEMENT_NODE && 
-                        (node.classList.contains('main-content') || 
-                         node.id === 'main-content' ||
-                         node.tagName === 'MAIN' ||
-                         (node.classList.length > 0 && node.querySelectorAll('h1, h2').length > 0))) {
+                    if (node.nodeType === Node.ELEMENT_NODE &&
+                        (node.classList.contains('main-content') ||
+                            node.id === 'main-content' ||
+                            node.tagName === 'MAIN' ||
+                            (node.classList.length > 0 && node.querySelectorAll('h1, h2').length > 0))) {
                         significantChanges = true;
                         break;
                     }
                 }
             }
-            
+
             if (significantChanges) break;
         }
-        
+
         if (significantChanges) {
             console.log('Significant content changes detected, checking for button injection');
-            
+
             // If we detect a significant content change, check if we need to inject the button
-            if (isVehicleDetailsPage() && !document.querySelector('.auto-dvic-container') && !injectionInProgress) {
+            if (isVehicleDetailsPage() && !document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER) && !injectionInProgress) {
                 console.log('Vehicle page detected after content change, triggering injection');
                 checkAndAddButton();
             }
@@ -1904,10 +1642,10 @@ function initialize() {
         childList: true,
         subtree: true
     });
-    
+
     // Also check when the window gets focus, as the user might have navigated in another tab
     window.addEventListener('focus', () => {
-        if (isVehicleDetailsPage() && !document.querySelector('.auto-dvic-container')) {
+        if (isVehicleDetailsPage() && !document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER)) {
             console.log('Window focused, checking button presence');
             injectionInProgress = false;
             checkAndAddButton();
@@ -1941,22 +1679,22 @@ function setupTabChangeDetection() {
 
         // Look for tab-related changes
         let tabChanged = false;
-        
+
         for (const mutation of mutations) {
             // Check if this mutation affects tab elements
-            if (mutation.target.tagName === 'INPUT' && 
-                mutation.target.getAttribute('type') === 'radio' && 
+            if (mutation.target.tagName === 'INPUT' &&
+                mutation.target.getAttribute('type') === 'radio' &&
                 mutation.target.getAttribute('role') === 'tab') {
                 tabChanged = true;
                 break;
             }
-            
+
             // Check for added nodes that might be radio inputs
             if (mutation.addedNodes.length > 0) {
                 for (const node of mutation.addedNodes) {
-                    if (node.nodeType === Node.ELEMENT_NODE && 
-                        node.tagName === 'INPUT' && 
-                        node.getAttribute('type') === 'radio' && 
+                    if (node.nodeType === Node.ELEMENT_NODE &&
+                        node.tagName === 'INPUT' &&
+                        node.getAttribute('type') === 'radio' &&
                         node.getAttribute('role') === 'tab') {
                         tabChanged = true;
                         break;
@@ -1965,27 +1703,27 @@ function setupTabChangeDetection() {
                 if (tabChanged) break;
             }
         }
-        
+
         if (tabChanged) {
             console.log('Tab change detected, checking if we need to show/hide the button');
-            
+
             // If we're on the Inspections tab and the button doesn't exist, add it
-            if (isVehicleDetailsPage() && !document.querySelector('.auto-dvic-container')) {
+            if (isVehicleDetailsPage() && !document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER)) {
                 console.log('Switched to Inspections tab, injecting button');
                 injectionInProgress = false;
                 checkAndAddButton();
-            } 
+            }
             // If we're not on the Inspections tab but the button exists, remove it
-            else if (!isVehicleDetailsPage() && document.querySelector('.auto-dvic-container')) {
+            else if (!isVehicleDetailsPage() && document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER)) {
                 console.log('Switched away from Inspections tab, removing button');
-                const buttonContainer = document.querySelector('.auto-dvic-container');
+                const buttonContainer = document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER);
                 if (buttonContainer) {
                     buttonContainer.remove();
                 }
             }
         }
     });
-    
+
     // Observe the entire document for tab changes
     tabObserver.observe(document, {
         subtree: true,
@@ -1993,27 +1731,27 @@ function setupTabChangeDetection() {
         attributes: true,
         attributeFilter: ['tabindex', 'checked', 'value']
     });
-    
+
     // Also check for clicks on tab elements
     document.addEventListener('click', (event) => {
         // Check if a tab was clicked
-        const clickedTab = event.target.closest('input[type="radio"][role="tab"]') || 
-                          event.target.closest('label[for]');
-        
+        const clickedTab = event.target.closest(SELECTORS.TAB_RADIO_INPUTS) ||
+            event.target.closest('label[for]');
+
         if (clickedTab) {
             console.log('Tab clicked, will check for button visibility after a short delay');
             // Wait a moment for the UI to update
             setTimeout(() => {
                 // If we're on the Inspections tab and the button doesn't exist, add it
-                if (isVehicleDetailsPage() && !document.querySelector('.auto-dvic-container')) {
+                if (isVehicleDetailsPage() && !document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER)) {
                     console.log('Now on Inspections tab, injecting button');
                     injectionInProgress = false;
                     checkAndAddButton();
-                } 
+                }
                 // If we're not on the Inspections tab but the button exists, remove it
-                else if (!isVehicleDetailsPage() && document.querySelector('.auto-dvic-container')) {
+                else if (!isVehicleDetailsPage() && document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER)) {
                     console.log('Not on Inspections tab, removing button');
-                    const buttonContainer = document.querySelector('.auto-dvic-container');
+                    const buttonContainer = document.querySelector(SELECTORS.AUTO_DVIC_CONTAINER);
                     if (buttonContainer) {
                         buttonContainer.remove();
                     }
@@ -2023,8 +1761,7 @@ function setupTabChangeDetection() {
     });
 }
 
-// Start initialization
-initialize();
+
 
 // Add message listener for fallback alerts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
