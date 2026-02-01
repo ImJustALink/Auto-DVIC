@@ -70,6 +70,10 @@
         MEDIUM_DELAY: 200,
         DROPDOWN_DELAY: 300,
         UI_UPDATE_DELAY: 500,
+        ANIMATION_DELAY: 500, // For transitions/animations
+        SELECTION_DELAY: 200, // For checkbox/radio selection feedback
+        PAGE_LOAD_DELAY: 1000,
+        NAV_UPDATE_DELAY: 300,
         UPLOAD_DELAY: 1000,
         SUBMISSION_DELAY: 1000,
         CHECK_INTERVAL: 1000,

@@ -1,10 +1,23 @@
 // Initialize Chrome storage
 const storage = chrome.storage || browser.storage;
 
+// Helper to get selectors with safety check
+const getSelectors = () => {
+    if (!window.AutoDVIC_Selectors) {
+        throw new Error('AutoDVIC_Selectors not found. Extension context may be invalid.');
+    }
+    return window.AutoDVIC_Selectors;
+};
+
+// Helper to get class name without dot
+const getClassName = (selector) => {
+    return selector.startsWith('.') ? selector.substring(1) : selector;
+};
+
 // Function to gather vehicle information
 function gatherVehicleInfo() {
     console.log('Starting vehicle info gathering...');
-    const { selectors } = window.AutoDVIC_Selectors;
+    const { selectors } = getSelectors();
     const { vehicle } = selectors;
 
     // First try to find the main container
@@ -89,7 +102,7 @@ async function handleDvicSubmission(formData) {
         rawValue: formData.inspectionType
     });
 
-    const { selectors, timing } = window.AutoDVIC_Selectors;
+    const { selectors, timing } = getSelectors();
     const { submission, form, issues } = selectors;
 
     try {
@@ -300,14 +313,14 @@ async function handleDvicSubmission(formData) {
                                     postTripRadio.checked = true;
                                     postTripRadio.setAttribute('aria-checked', 'true');
                                     console.log('Method 2: Set radio properties');
-                                    await new Promise(resolve => setTimeout(resolve, 200));
+                                    await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                                 },
                                 // Method 3: Dispatch events
                                 async () => {
                                     postTripRadio.dispatchEvent(new Event('change', { bubbles: true }));
                                     postTripRadio.dispatchEvent(new Event('input', { bubbles: true }));
                                     console.log('Method 3: Dispatched events');
-                                    await new Promise(resolve => setTimeout(resolve, 200));
+                                    await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                                 },
                                 // Method 4: Click label
                                 async () => {
@@ -332,7 +345,7 @@ async function handleDvicSubmission(formData) {
                             }
 
                             // Final verification
-                            await new Promise(resolve => setTimeout(resolve, 500));
+                            await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
                             console.log('Final radio state:', {
                                 checked: postTripRadio.checked,
                                 ariaChecked: postTripRadio.getAttribute('aria-checked')
@@ -347,7 +360,7 @@ async function handleDvicSubmission(formData) {
                 }
 
                 // Wait for any animations or state updates
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
 
                 // Fill in driver name with autocomplete handling
                 async function fillDriverName(retryCount = 0) {
@@ -425,7 +438,7 @@ async function handleDvicSubmission(formData) {
 
                         // Click the container to open dropdown
                         container.click();
-                        await new Promise(resolve => setTimeout(resolve, 300));
+                        await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
 
                         // Focus the input and ensure it has the correct value
                         driverNameInput.focus();
@@ -433,7 +446,7 @@ async function handleDvicSubmission(formData) {
                             driverNameInput.value = formData.daName;
                             driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
                         }
-                        await new Promise(resolve => setTimeout(resolve, 300));
+                        await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
 
                         // Make sure aria-expanded is set
                         const input = container.querySelector(form.comboboxInput);
@@ -479,7 +492,7 @@ async function handleDvicSubmission(formData) {
                                 console.log(`Trying driver option ${currentAttempt + 1} of ${options.length}`);
 
                                 // Wait for selection to take effect
-                                await new Promise(resolve => setTimeout(resolve, 300));
+                                await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
 
                                 // Check if this selection is correct
                                 if (verifyTransporterId()) {
@@ -493,7 +506,7 @@ async function handleDvicSubmission(formData) {
                                 if (!isResolved) {
                                     currentAttempt++;
                                     if (currentAttempt < maxAttempts) {
-                                        setTimeout(tryDriver, 300);
+                                        setTimeout(tryDriver, timing.DROPDOWN_DELAY);
                                     } else {
                                         promptManualSelection();
                                     }
@@ -531,7 +544,7 @@ async function handleDvicSubmission(formData) {
                             );
 
                             // Watch for changes to the transporter ID field
-                            const transporterInput = document.querySelector('input[class="css-ys1hc6"][placeholder="Transporter ID"]');
+                            const transporterInput = document.querySelector(form.transporterIdInput);
                             if (transporterInput) {
                                 const observer = new MutationObserver(async () => {
                                     if (isResolved) {
@@ -585,7 +598,7 @@ async function handleDvicSubmission(formData) {
                     console.log('Filled in date:', formattedDate);
 
                     // Wait for UI to update
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
                 }
 
                 // Fill in time
@@ -613,7 +626,7 @@ async function handleDvicSubmission(formData) {
                     console.log('Filled in time:', formattedTime);
 
                     // Wait for UI to update
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
                 }
 
                 // Handle defects radio selection after all inputs are filled
@@ -634,7 +647,7 @@ async function handleDvicSubmission(formData) {
                         if (noDefectsRadio) {
                             console.log('No issues found, selecting "No" for defects');
                             noDefectsRadio.click();
-                            await new Promise(resolve => setTimeout(resolve, 200));
+                            await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                         }
                     } else {
                         // If issues were selected, select "Yes"
@@ -642,7 +655,7 @@ async function handleDvicSubmission(formData) {
                         if (yesDefectsRadio) {
                             console.log('Issues found, selecting "Yes" for defects');
                             yesDefectsRadio.click();
-                            await new Promise(resolve => setTimeout(resolve, 200));
+                            await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                         }
                     }
                 } else {
@@ -650,13 +663,13 @@ async function handleDvicSubmission(formData) {
                 }
 
                 // Wait for any animations or state updates
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
 
                 // Find and click the Next button
                 const nextButton = Array.from(document.querySelectorAll('button')).find(btn => {
                     const text = btn.textContent.trim().toLowerCase();
                     // Strip dot for className check
-                    return btn.className.includes(submission.nextButtonClass.substring(1)) && (
+                    return btn.className.includes(getClassName(submission.nextButtonClass)) && (
                         text.includes('next: review & submit') ||
                         text.includes('next: select defects')
                     );
@@ -669,7 +682,7 @@ async function handleDvicSubmission(formData) {
                     // If we have issues, handle the issue selection page
                     if (formData.issues && Object.keys(formData.issues).length > 0) {
                         console.log('Issues found, waiting for defects page to load...');
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
 
                         // First expand all dropdowns
                         const dropdowns = document.querySelectorAll(issues.dropdownExpand);
@@ -679,12 +692,12 @@ async function handleDvicSubmission(formData) {
                             const expandButton = dropdown.firstElementChild;
                             if (expandButton) {
                                 expandButton.click();
-                                await new Promise(resolve => setTimeout(resolve, 100));
+                                await new Promise(resolve => setTimeout(resolve, timing.SHORT_DELAY));
                             }
                         }
 
                         // Wait for all dropdowns to fully expand
-                        await new Promise(resolve => setTimeout(resolve, 250));
+                        await new Promise(resolve => setTimeout(resolve, 250 /* deliberately keeping hardcoded as it's a visual delay specific to this loop */));
 
                         const formIssues = formData.issues || {};
                         console.log('Processing issues:', formIssues);
@@ -826,7 +839,7 @@ async function handleDvicSubmission(formData) {
                                                     text: issueText
                                                 });
                                                 checkbox.click();
-                                                await new Promise(resolve => setTimeout(resolve, 200));
+                                                await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                                                 found = true;
                                                 break;
                                             } else {
@@ -881,18 +894,23 @@ async function handleDvicSubmission(formData) {
                         }
 
                         // If all issues were found, continue with automation
-                        const reviewButton = document.querySelector(submission.nextButtonClass);
+                        const reviewButton = Array.from(document.querySelectorAll('button')).find(btn => {
+                            const text = btn.textContent.trim().toLowerCase();
+                            // Strip dot for className check
+                            return btn.className.includes(getClassName(submission.nextButtonClass)) &&
+                                (text.includes('review') || text.includes('next'));
+                        });
                         if (reviewButton) {
                             console.log('Clicking review button:', reviewButton.textContent.trim());
                             reviewButton.click();
 
                             // Wait for review page to load
-                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
 
                             // Find and log the final submit button
                             const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
                                 const text = btn.textContent.trim().toLowerCase();
-                                return btn.className.includes(submission.submitButtonClass.substring(1)) && text === 'submit inspection';
+                                return btn.className.includes(getClassName(submission.submitButtonClass)) && text === 'submit inspection';
                             });
 
                             if (submitButton) {
@@ -920,11 +938,11 @@ async function handleDvicSubmission(formData) {
                         }
                     } else {
                         // No issues case - wait for page change and log submit
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
 
                         const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
                             const text = btn.textContent.trim().toLowerCase();
-                            return btn.className.includes(submission.submitButtonClass.substring(1)) && text === 'submit inspection';
+                            return btn.className.includes(getClassName(submission.submitButtonClass)) && text === 'submit inspection';
                         });
 
                         if (submitButton) {
@@ -1174,7 +1192,7 @@ function isVehicleDetailsPage() {
 
 // Function to find and inject button
 function findAndInjectButton() {
-    const { selectors } = window.AutoDVIC_Selectors;
+    const { selectors } = getSelectors();
     const { navigation } = selectors;
 
     // Don't add if button already exists
@@ -1216,7 +1234,7 @@ function findAndInjectButton() {
 
 // Function to check URL and add button if appropriate
 function checkAndAddButton() {
-    const { timing } = window.AutoDVIC_Selectors;
+    const { timing } = getSelectors();
     // Only proceed if we're on a vehicle details page and not already injecting
     if (!isVehicleDetailsPage() || injectionInProgress) {
         return;
@@ -1276,7 +1294,7 @@ function handleUrlChange() {
 
 // Function to periodically check for the button after navigation
 function setupPeriodicButtonCheck() {
-    const { timing } = window.AutoDVIC_Selectors;
+    const { timing } = getSelectors();
     // Clear any existing timer
     clearTimeout(periodicCheckTimer);
 
@@ -1320,7 +1338,7 @@ function isDomReady() {
 
 // Initial setup with DOM ready check
 function initialize() {
-    const { selectors } = window.AutoDVIC_Selectors;
+    const { selectors } = getSelectors();
     const { navigation } = selectors;
 
     if (!isDomReady()) {
@@ -1362,7 +1380,7 @@ function initialize() {
 
             // Check for attribute changes on tabs
             if (mutation.type === 'attributes' &&
-                (mutation.target.classList.contains(navigation.tabClass.substring(1)) ||
+                (mutation.target.classList.contains(getClassName(navigation.tabClass)) ||
                     mutation.target.getAttribute('role') === 'tab')) {
                 handleUrlChange();
                 break;
@@ -1441,7 +1459,7 @@ function initialize() {
 
 // Function to set up tab change detection
 function setupTabChangeDetection() {
-    const { selectors } = window.AutoDVIC_Selectors;
+    const { selectors } = getSelectors();
     const { navigation } = selectors;
 
     // Create a mutation observer to watch for tab changes
@@ -1545,7 +1563,7 @@ function setupTabChangeDetection() {
                         buttonContainer.remove();
                     }
                 }
-            }, 300); // Short delay to allow UI to update
+            }, timing.NAV_UPDATE_DELAY); // Short delay to allow UI to update
         }
     });
 }
