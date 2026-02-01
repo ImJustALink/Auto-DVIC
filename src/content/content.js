@@ -42,8 +42,8 @@ function gatherVehicleInfo() {
         return '';
     };
 
-    // Get license plate and state from second pill (index 1)
-    const licensePillText = getPillText(1);
+    // Get license plate and state from second pill
+    const licensePillText = getPillText(vehicle.licensePillIndex);
     console.log('License pill text:', licensePillText);
 
     // Split on parentheses to separate plate and state
@@ -52,11 +52,11 @@ function gatherVehicleInfo() {
     const state = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
     console.log('Extracted:', { license, state });
 
-    // Get VIN from third pill (index 2)
-    const vin = getPillText(2);
+    // Get VIN from third pill
+    const vin = getPillText(vehicle.vinPillIndex);
 
-    // Get mileage from fifth pill (index 4)
-    const mileageText = getPillText(4);
+    // Get mileage from fifth pill
+    const mileageText = getPillText(vehicle.mileagePillIndex);
     console.log('Checking mileage text:', mileageText);
 
     let mileage = '';
@@ -70,12 +70,12 @@ function gatherVehicleInfo() {
 
         // Only get asset type if we have valid mileage
         if (mileage) {
-            assetType = getPillText(5);
+            assetType = getPillText(vehicle.assetTypePillIndex);
         }
     } else if (mileageText === 'Mileage unknown') {
         console.log('Mileage unknown found');
         // Get asset type even if mileage is unknown
-        assetType = getPillText(5);
+        assetType = getPillText(vehicle.assetTypePillIndex);
     } else {
         console.log('Invalid mileage format, skipping mileage and asset type');
     }
@@ -586,7 +586,7 @@ async function handleDvicSubmission(formData) {
                 // Fill in date
                 const dateInput = Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
                     const label = input.getAttribute('aria-label') || '';
-                    return label.toLowerCase().includes('inspection date');
+                    return label.toLowerCase().includes(form.dateInputLabel);
                 });
 
                 if (dateInput) {
@@ -602,12 +602,12 @@ async function handleDvicSubmission(formData) {
                 }
 
                 // Fill in time
-                const timeInput = document.querySelector('input[type="time"]') ||
+                const timeInput = document.querySelector(`input[type="${form.timeInputType}"]`) ||
                     Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
                         const label = input.getAttribute('aria-label') || '';
                         const placeholder = input.getAttribute('placeholder') || '';
-                        return label.toLowerCase().includes('inspection time') ||
-                            placeholder.toLowerCase().includes('time') ||
+                        return label.toLowerCase().includes(form.timeInputLabel) ||
+                            placeholder.toLowerCase().includes(form.timeInputPlaceholder) ||
                             input.id?.toLowerCase().includes('time');
                     });
 
@@ -1459,7 +1459,7 @@ function initialize() {
 
 // Function to set up tab change detection
 function setupTabChangeDetection() {
-    const { selectors } = getSelectors();
+    const { selectors, timing } = getSelectors();
     const { navigation } = selectors;
 
     // Create a mutation observer to watch for tab changes
