@@ -16,7 +16,6 @@ const getClassName = (selector) => {
 
 // Function to gather vehicle information
 function gatherVehicleInfo() {
-    console.log('Starting vehicle info gathering...');
     const { selectors } = getSelectors();
     const { vehicle } = selectors;
 
@@ -29,42 +28,31 @@ function gatherVehicleInfo() {
 
     // Get all pill items
     const pillItems = mainContainer.querySelectorAll(vehicle.pillItems);
-    console.log(`Found ${pillItems.length} pill items`);
-
     // Helper function to get text from a specific pill item
     const getPillText = (index) => {
         if (index < pillItems.length) {
             const text = pillItems[index].textContent.trim();
-            console.log(`Pill ${index + 1} text:`, text);
             return text;
         }
-        console.log(`Pill ${index + 1} not found`);
         return '';
     };
 
     // Get license plate and state from second pill
     const licensePillText = getPillText(vehicle.licensePillIndex);
-    console.log('License pill text:', licensePillText);
-
     // Split on parentheses to separate plate and state
     const parts = licensePillText.split('(');
     const license = parts[0].trim();
     const state = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
-    console.log('Extracted:', { license, state });
-
     // Get VIN from third pill
     const vin = getPillText(vehicle.vinPillIndex);
 
     // Get mileage from fifth pill
     const mileageText = getPillText(vehicle.mileagePillIndex);
-    console.log('Checking mileage text:', mileageText);
-
     let mileage = '';
     let assetType = '';
 
     // Only process mileage and asset type if mileage starts with numbers
     if (/^\d/.test(mileageText)) {
-        console.log('Valid mileage format found');
         const mileageMatch = mileageText.match(/(\d+)\s*miles/);
         mileage = mileageMatch ? mileageMatch[1] : '';
 
@@ -73,12 +61,10 @@ function gatherVehicleInfo() {
             assetType = getPillText(vehicle.assetTypePillIndex);
         }
     } else if (mileageText === 'Mileage unknown') {
-        console.log('Mileage unknown found');
         // Get asset type even if mileage is unknown
         assetType = getPillText(vehicle.assetTypePillIndex);
     } else {
-        console.log('Invalid mileage format, skipping mileage and asset type');
-    }
+        }
 
     const vehicleInfo = {
         lic: license,
@@ -88,19 +74,13 @@ function gatherVehicleInfo() {
         asset_type: assetType
     };
 
-    console.log('Extracted vehicle info:', vehicleInfo);
     return vehicleInfo;
 }
 
 // Function to handle DVIC submission flow
 async function handleDvicSubmission(formData) {
-    console.log('Starting DVIC submission flow with data:', formData);
-    console.log('Inspection type from formData:', {
-        type: formData.inspectionType,
-        typeOf: typeof formData.inspectionType,
-        isPostTrip: formData.inspectionType.toLowerCase() === 'post',
-        rawValue: formData.inspectionType
-    });
+    // Normalize inspection type safely
+    const normalizedInspectionType = String(formData.inspectionType || '').toLowerCase();
 
     const { selectors, timing } = getSelectors();
     const { submission, form, issues } = selectors;
@@ -117,8 +97,6 @@ async function handleDvicSubmission(formData) {
 
         // Click the upload button
         uploadButton.click();
-        console.log('Clicked upload inspection button');
-
         // Wait for upload dialog to appear
         await new Promise(resolve => setTimeout(resolve, timing.SUBMISSION_DELAY));
 
@@ -250,7 +228,8 @@ async function handleDvicSubmission(formData) {
         // Add listener for file selection
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) {
-            fileInput.addEventListener('change', async () => {
+            fileInput.addEventListener('change', async function onChange() {
+                fileInput.removeEventListener('change', onChange);
                 try {
                     // Clean up overlay
                     cleanup();
@@ -259,32 +238,13 @@ async function handleDvicSubmission(formData) {
                     await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
 
                     // Set inspection type if post-trip
-                    const isPostTrip = formData.inspectionType.toLowerCase() === 'post';
-                    console.log('Checking inspection type:', {
-                        formDataType: formData.inspectionType,
-                        isPostTrip,
-                        typeComparison: formData.inspectionType === 'Post-Trip',
-                        lowercaseComparison: formData.inspectionType.toLowerCase() === 'post'
-                    });
-
+                    const isPostTrip = normalizedInspectionType === 'post';
                     if (isPostTrip) {
-                        console.log('Attempting to select Post-Trip inspection type...');
-
                         // Wait for radio buttons to be available
                         await new Promise(resolve => setTimeout(resolve, timing.SHORT_DELAY));
 
                         // Find all radio buttons first
                         const allRadios = document.querySelectorAll('input[type="radio"]');
-                        console.log('Found radio buttons:', Array.from(allRadios).map(r => ({
-                            value: r.value,
-                            name: r.name,
-                            type: r.type,
-                            checked: r.checked,
-                            ariaChecked: r.getAttribute('aria-checked'),
-                            class: r.className,
-                            parentText: r.parentElement?.textContent?.trim()
-                        })));
-
                         // Try to find post-trip radio
                         const postTripRadio = Array.from(allRadios).find(radio =>
                             radio.value === 'POST_TRIP_DVIC' &&
@@ -292,34 +252,24 @@ async function handleDvicSubmission(formData) {
                         );
 
                         if (postTripRadio) {
-                            console.log('Found post-trip radio:', {
-                                value: postTripRadio.value,
-                                name: postTripRadio.name,
-                                checked: postTripRadio.checked,
-                                ariaChecked: postTripRadio.getAttribute('aria-checked')
-                            });
-
                             try {
                                 // Try multiple selection methods
                                 const methods = [
                                     // Method 1: Direct click
                                     async () => {
                                         postTripRadio.click();
-                                        console.log('Method 1: Clicked radio directly');
                                         await new Promise(resolve => setTimeout(resolve, timing.MEDIUM_DELAY));
                                     },
                                     // Method 2: Set properties
                                     async () => {
                                         postTripRadio.checked = true;
                                         postTripRadio.setAttribute('aria-checked', 'true');
-                                        console.log('Method 2: Set radio properties');
                                         await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                                     },
                                     // Method 3: Dispatch events
                                     async () => {
                                         postTripRadio.dispatchEvent(new Event('change', { bubbles: true }));
                                         postTripRadio.dispatchEvent(new Event('input', { bubbles: true }));
-                                        console.log('Method 3: Dispatched events');
                                         await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                                     },
                                     // Method 4: Click label
@@ -328,8 +278,7 @@ async function handleDvicSubmission(formData) {
                                             document.querySelector(`label[for="${postTripRadio.id}"]`);
                                         if (label) {
                                             label.click();
-                                            console.log('Method 4: Clicked label');
-                                        }
+                                            }
                                         await new Promise(resolve => setTimeout(resolve, timing.MEDIUM_DELAY));
                                     }
                                 ];
@@ -339,19 +288,13 @@ async function handleDvicSubmission(formData) {
                                     await method();
                                     // Check if it worked
                                     if (postTripRadio.checked) {
-                                        console.log('Selection successful after method');
                                         break;
                                     }
                                 }
 
                                 // Final verification
                                 await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
-                                console.log('Final radio state:', {
-                                    checked: postTripRadio.checked,
-                                    ariaChecked: postTripRadio.getAttribute('aria-checked')
-                                });
-
-                            } catch (err) {
+                                } catch (err) {
                                 console.error('Error selecting post-trip:', err);
                             }
                         } else {
@@ -364,8 +307,6 @@ async function handleDvicSubmission(formData) {
 
                     // Fill in driver name with autocomplete handling
                     async function fillDriverName(retryCount = 0) {
-                        console.log(`Attempting to fill driver name (attempt ${retryCount + 1})`);
-
                         // Only find the input field on first attempt
                         if (retryCount === 0) {
                             const driverNameInput = document.querySelector(form.driverInput) ||
@@ -375,8 +316,6 @@ async function handleDvicSubmission(formData) {
                                 console.error('Driver input not found');
                                 throw new Error('Driver name input not found');
                             }
-
-                            console.log('Found driver input field');
 
                             // Store the input field for retries
                             fillDriverName.inputField = driverNameInput;
@@ -392,14 +331,10 @@ async function handleDvicSubmission(formData) {
                         driverNameInput.value = formData.daName;
                         driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
 
-                        console.log('Set driver name:', formData.daName);
-                        console.log('Expected transporter ID:', formData.transporterId);
-
                         // Function to verify transporter ID
                         const verifyTransporterId = () => {
                             const transporterInput = document.querySelector(form.transporterIdInput);
                             if (!transporterInput) {
-                                console.log('Transporter ID input not found');
                                 return false;
                             }
 
@@ -407,18 +342,13 @@ async function handleDvicSubmission(formData) {
                             const currentTransporterId = transporterInput.value.trim();
                             const expectedTransporterId = formData.transporterId.trim();
 
-                            console.log('Current transporter ID:', currentTransporterId);
-                            console.log('Expected transporter ID:', expectedTransporterId);
-
                             // If either ID is empty, return false
                             if (!currentTransporterId || !expectedTransporterId) {
-                                console.log('One or both transporter IDs are empty');
                                 return false;
                             }
 
                             // Compare the IDs
                             const isMatch = currentTransporterId === expectedTransporterId;
-                            console.log('Transporter ID match:', isMatch);
                             return isMatch;
                         };
 
@@ -432,7 +362,6 @@ async function handleDvicSubmission(formData) {
                             // Find the combobox container
                             const container = driverNameInput.closest(form.comboboxContainer);
                             if (!container) {
-                                console.log('Could not find combobox container');
                                 return [];
                             }
 
@@ -458,8 +387,7 @@ async function handleDvicSubmission(formData) {
                             // Get options and log them
                             const options = Array.from(document.querySelectorAll(form.dropdownOption));
                             options.forEach((opt, i) => {
-                                console.log(`Option ${i + 1}:`, opt.textContent);
-                            });
+                                });
 
                             return options;
                         };
@@ -476,7 +404,6 @@ async function handleDvicSubmission(formData) {
                                 // Check if current selection is correct
                                 await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
                                 if (verifyTransporterId()) {
-                                    console.log('Current selection has correct transporter ID');
                                     isResolved = true;
                                     resolve();
                                     return;
@@ -484,19 +411,14 @@ async function handleDvicSubmission(formData) {
 
                                 // If not correct, get options and try next one
                                 const options = await getDriverOptions();
-                                console.log(`Found ${options.length} driver options`);
-
                                 if (currentAttempt < options.length) {
                                     // Click the next option
                                     options[currentAttempt].click();
-                                    console.log(`Trying driver option ${currentAttempt + 1} of ${options.length}`);
-
                                     // Wait for selection to take effect
                                     await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
 
                                     // Check if this selection is correct
                                     if (verifyTransporterId()) {
-                                        console.log('Found matching driver with correct transporter ID');
                                         isResolved = true;
                                         resolve();
                                         return;
@@ -521,7 +443,6 @@ async function handleDvicSubmission(formData) {
                             const promptManualSelection = () => {
                                 if (isResolved) return;
 
-                                console.log('Prompting for manual driver selection');
                                 const rect = driverNameInput.getBoundingClientRect();
                                 const overlay = document.createElement('div');
                                 overlay.style.cssText = `
@@ -553,7 +474,6 @@ async function handleDvicSubmission(formData) {
                                         }
 
                                         if (verifyTransporterId()) {
-                                            console.log('Correct driver selected by user');
                                             isResolved = true;
                                             observer.disconnect();
                                             document.body.removeChild(overlay);
@@ -577,7 +497,6 @@ async function handleDvicSubmission(formData) {
 
                     // Try to fill driver name with retry
                     try {
-                        console.log('Starting driver name fill process');
                         await fillDriverName(0);
                     } catch (error) {
                         console.error('Error in driver name fill process:', error);
@@ -595,8 +514,6 @@ async function handleDvicSubmission(formData) {
                         const formattedDate = `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year}`;
                         dateInput.value = formattedDate;
                         dateInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        console.log('Filled in date:', formattedDate);
-
                         // Wait for UI to update
                         await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
                     }
@@ -623,14 +540,11 @@ async function handleDvicSubmission(formData) {
 
                         timeInput.value = formattedTime;
                         timeInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        console.log('Filled in time:', formattedTime);
-
                         // Wait for UI to update
                         await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
                     }
 
                     // Handle defects radio selection after all inputs are filled
-                    console.log('Handling defects radio selection...');
                     const allRadios = document.querySelectorAll(submission.radioButtons);
                     const defectsRadios = Array.from(allRadios).filter(radio =>
                         radio.name === issues.defectsRadioName
@@ -639,13 +553,10 @@ async function handleDvicSubmission(formData) {
                     if (defectsRadios.length === 2) {
                         // Check if there are any issues selected
                         const hasIssues = formData.issues && Object.keys(formData.issues).length > 0;
-                        console.log('Checking for issues:', { hasIssues, issues: formData.issues });
-
                         // If no issues were selected, select "No"
                         if (!hasIssues) {
                             const noDefectsRadio = defectsRadios.find(radio => radio.value === 'false');
                             if (noDefectsRadio) {
-                                console.log('No issues found, selecting "No" for defects');
                                 noDefectsRadio.click();
                                 await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                             }
@@ -653,7 +564,6 @@ async function handleDvicSubmission(formData) {
                             // If issues were selected, select "Yes"
                             const yesDefectsRadio = defectsRadios.find(radio => radio.value === 'true');
                             if (yesDefectsRadio) {
-                                console.log('Issues found, selecting "Yes" for defects');
                                 yesDefectsRadio.click();
                                 await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                             }
@@ -676,18 +586,14 @@ async function handleDvicSubmission(formData) {
                     });
 
                     if (nextButton) {
-                        console.log('Clicking next button:', nextButton.textContent.trim());
                         nextButton.click();
 
                         // If we have issues, handle the issue selection page
                         if (formData.issues && Object.keys(formData.issues).length > 0) {
-                            console.log('Issues found, waiting for defects page to load...');
                             await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
 
                             // First expand all dropdowns
                             const dropdowns = document.querySelectorAll(issues.dropdownExpand);
-                            console.log('Found dropdowns to expand:', dropdowns.length);
-
                             for (const dropdown of dropdowns) {
                                 const expandButton = dropdown.firstElementChild;
                                 if (expandButton) {
@@ -700,8 +606,6 @@ async function handleDvicSubmission(formData) {
                             await new Promise(resolve => setTimeout(resolve, 250 /* deliberately keeping hardcoded as it's a visual delay specific to this loop */));
 
                             const formIssues = formData.issues || {};
-                            console.log('Processing issues:', formIssues);
-
                             // Create mapping of issue IDs to their exact text in the fleet portal
                             // Get mappings from global object
                             const { issueMapping, categoryMapping } = window.AutoDVIC_Mappings || {};
@@ -730,19 +634,10 @@ async function handleDvicSubmission(formData) {
                                     continue;
                                 }
 
-                                console.log('Looking for issue:', {
-                                    id: issueId,
-                                    text: fleetPortalText,
-                                    category: mappingInfo.category,
-                                    subcategory: mappingInfo.subcategory
-                                });
-
                                 let found = false;
 
                                 // Find all category sections
                                 const categoryContainers = document.querySelectorAll(issues.categoryContainer);
-                                console.log('Found category sections:', categoryContainers.length);
-
                                 // Search through each category section
                                 for (const container of categoryContainers) {
                                     // Find the category text - try multiple selectors since the structure might vary
@@ -752,32 +647,23 @@ async function handleDvicSubmission(formData) {
                                     if (categoryDiv) {
                                         categoryText = categoryDiv.textContent?.trim();
                                     } else {
-                                        console.log('Could not find category text element, skipping section');
                                         continue;
                                     }
 
                                     if (!categoryText) {
-                                        console.log('Category text is empty, skipping section');
                                         continue;
                                     }
 
-                                    console.log('Found category text:', categoryText);
-
                                     // Check if this is the matching category
                                     if (categoryText === mappingInfo.category) {
-                                        console.log('Found matching category:', categoryText);
-
                                         // Get the parent category container
                                         const categoryContainer = categoryDiv.closest(issues.categoryContainer);
                                         if (!categoryContainer) {
-                                            console.log('Could not find category container');
                                             continue;
                                         }
 
                                         // Find subcategories in this category container
                                         const subcategories = categoryContainer.querySelectorAll(issues.subcategory);
-                                        console.log('Found subcategories in category:', subcategories.length);
-
                                         // Find the matching subcategory
                                         let matchingSubcategory = null;
                                         for (const sub of subcategories) {
@@ -788,34 +674,23 @@ async function handleDvicSubmission(formData) {
                                         }
 
                                         if (!matchingSubcategory) {
-                                            console.log('Subcategory not found in this category section:', mappingInfo.subcategory);
                                             continue;
                                         }
-
-                                        console.log('Found matching subcategory:', mappingInfo.subcategory);
 
                                         // Find the issues container
                                         const issuesContainer = categoryContainer.querySelector(issues.issuesContainer);
                                         if (!issuesContainer) {
-                                            console.log('Could not find issues container');
                                             continue;
                                         }
-
-                                        console.log('Found issues container');
 
                                         // Find the fieldset containing the issues
                                         const issuesFieldset = issuesContainer.querySelector(issues.issuesFieldset);
                                         if (!issuesFieldset) {
-                                            console.log('Could not find issues fieldset');
                                             continue;
                                         }
 
-                                        console.log('Found issues fieldset');
-
                                         // Find all issue elements in the fieldset
                                         const issueElements = issuesFieldset.querySelectorAll(issues.issueElement);
-                                        console.log('Found issue elements:', issueElements.length);
-
                                         // Look for exact text match in each issue element
                                         for (const issueElement of issueElements) {
                                             // Get the text from the div inside the label
@@ -824,20 +699,9 @@ async function handleDvicSubmission(formData) {
 
                                             const issueText = issueDiv.textContent.trim();
                                             if (issueText === fleetPortalText) {
-                                                console.log('Found exact match:', {
-                                                    category: mappingInfo.category,
-                                                    subcategory: mappingInfo.subcategory,
-                                                    text: issueText
-                                                });
-
                                                 // Find the checkbox which is an input inside the label
                                                 const checkbox = issueElement.querySelector(issues.issueCheckbox);
                                                 if (checkbox && !checkbox.checked) {
-                                                    console.log('Clicking checkbox for:', {
-                                                        category: mappingInfo.category,
-                                                        subcategory: mappingInfo.subcategory,
-                                                        text: issueText
-                                                    });
                                                     checkbox.click();
                                                     await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
                                                     found = true;
@@ -901,7 +765,6 @@ async function handleDvicSubmission(formData) {
                                     (text.includes('review') || text.includes('next'));
                             });
                             if (reviewButton) {
-                                console.log('Clicking review button:', reviewButton.textContent.trim());
                                 reviewButton.click();
 
                                 // Wait for review page to load
@@ -914,20 +777,11 @@ async function handleDvicSubmission(formData) {
                                 });
 
                                 if (submitButton) {
-                                    console.log('Found submit button:', {
-                                        text: submitButton.textContent.trim(),
-                                        class: submitButton.className,
-                                        disabled: submitButton.disabled,
-                                        type: submitButton.type
-                                    });
-
                                     // Check if development mode is enabled
                                     const { devMode } = await chrome.storage.sync.get({ devMode: false });
                                     if (devMode) {
-                                        console.log('Development mode enabled - skipping submission');
                                         showCustomAlert('Dev Mode', 'Form submission skipped (development mode enabled)');
                                     } else {
-                                        console.log('Submitting inspection...');
                                         submitButton.click();
                                     }
                                 } else {
@@ -946,20 +800,11 @@ async function handleDvicSubmission(formData) {
                             });
 
                             if (submitButton) {
-                                console.log('Found submit button:', {
-                                    text: submitButton.textContent.trim(),
-                                    class: submitButton.className,
-                                    disabled: submitButton.disabled,
-                                    type: submitButton.type
-                                });
-
                                 // Check if development mode is enabled
                                 const { devMode } = await chrome.storage.sync.get({ devMode: false });
                                 if (devMode) {
-                                    console.log('Development mode enabled - skipping submission');
                                     showCustomAlert('Dev Mode', 'Form submission skipped (development mode enabled)');
                                 } else {
-                                    console.log('Submitting inspection...');
                                     submitButton.click();
                                 }
                             } else {
@@ -1059,8 +904,6 @@ function showCustomAlert(title, message) {
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('Content script received message:', message);
-
     if (message.action === 'startSubmission') {
         handleDvicSubmission(message.data).catch(error => {
             console.error('Submission error:', error);
@@ -1118,7 +961,6 @@ function createAutoDvicButton() {
     // Add click handler
     button.addEventListener('click', async () => {
         try {
-            console.log('Button clicked, gathering info...');
             const vehicleInfo = gatherVehicleInfo();
 
             if (!vehicleInfo) {
@@ -1127,8 +969,6 @@ function createAutoDvicButton() {
 
             // Store vehicle info
             await storage.local.set({ vehicleInfo });
-            console.log('Successfully stored vehicle info:', vehicleInfo);
-
             // Visual feedback
             const originalText = button.textContent;
             button.textContent = '✓ Info Gathered';
@@ -1234,7 +1074,6 @@ function findAndInjectButton() {
     if (uploadButton) {
         const buttonContainer = createAutoDvicButton();
         uploadButton.parentNode.insertBefore(buttonContainer, uploadButton);
-        console.log('Auto DVIC button successfully injected');
         return true;
     }
     return false;
@@ -1255,13 +1094,11 @@ function checkAndAddButton() {
 
     const retryInjection = () => {
         if (attempts >= maxAttempts) {
-            console.log('Max injection attempts reached, resetting injection state');
             injectionInProgress = false;
             return;
         }
 
         if (findAndInjectButton()) {
-            console.log('Button injection successful on attempt', attempts + 1);
             injectionInProgress = false;
             return;
         }
@@ -1269,7 +1106,6 @@ function checkAndAddButton() {
         attempts++;
         // More gradual backoff to give more chances with reasonable delays
         const delay = retryInterval * (1 + Math.min(attempts, 3));
-        console.log(`Button injection attempt ${attempts} failed, retrying in ${delay}ms`);
         setTimeout(retryInjection, delay);
     };
 
@@ -1288,7 +1124,6 @@ function handleUrlChange() {
         return;
     }
 
-    console.log('URL changed to:', currentUrl);
     lastUrl = currentUrl;
 
     // Reset injection state on URL change
@@ -1313,7 +1148,6 @@ function setupPeriodicButtonCheck() {
     const performCheck = () => {
         // Stop checking if we've reached max attempts or if we're not on a vehicle page
         if (checkCount >= maxChecks || !isVehicleDetailsPage()) {
-            console.log('Periodic checks complete or no longer on vehicle page');
             clearTimeout(periodicCheckTimer);
             return;
         }
@@ -1325,11 +1159,9 @@ function setupPeriodicButtonCheck() {
 
         // If we're on a vehicle page but the button isn't present, try again
         if (!buttonExists && !injectionInProgress) {
-            console.log(`Periodic check ${checkCount}: Button not found, triggering injection`);
             checkAndAddButton();
         } else {
-            console.log(`Periodic check ${checkCount}: ${buttonExists ? 'Button already exists' : 'Injection in progress'}`);
-        }
+            }
 
         // Schedule next check
         periodicCheckTimer = setTimeout(performCheck, checkInterval);
@@ -1381,7 +1213,6 @@ function initialize() {
                 (mutation.target.classList.contains('nav') ||
                     mutation.target.classList.contains('menu') ||
                     mutation.target.tagName === 'NAV')) {
-                console.log('Navigation element changed, checking URL');
                 handleUrlChange();
                 break;
             }
@@ -1399,7 +1230,6 @@ function initialize() {
     // Try to find navigation elements to observe
     const navElements = document.querySelectorAll(navigation.navElements);
     if (navElements.length > 0) {
-        console.log(`Found ${navElements.length} navigation elements to observe`);
         navElements.forEach(nav => {
             navObserver.observe(nav, {
                 childList: true,
@@ -1440,11 +1270,8 @@ function initialize() {
         }
 
         if (significantChanges) {
-            console.log('Significant content changes detected, checking for button injection');
-
             // If we detect a significant content change, check if we need to inject the button
             if (isVehicleDetailsPage() && !document.querySelector('.auto-dvic-container') && !injectionInProgress) {
-                console.log('Vehicle page detected after content change, triggering injection');
                 checkAndAddButton();
             }
         }
@@ -1458,7 +1285,6 @@ function initialize() {
     // Also check when the window gets focus, as the user might have navigated in another tab
     window.addEventListener('focus', () => {
         if (isVehicleDetailsPage() && !document.querySelector('.auto-dvic-container')) {
-            console.log('Window focused, checking button presence');
             injectionInProgress = false;
             checkAndAddButton();
         }
@@ -1520,17 +1346,13 @@ function setupTabChangeDetection() {
         }
 
         if (tabChanged) {
-            console.log('Tab change detected, checking if we need to show/hide the button');
-
             // If we're on the Inspections tab and the button doesn't exist, add it
             if (isVehicleDetailsPage() && !document.querySelector('.auto-dvic-container')) {
-                console.log('Switched to Inspections tab, injecting button');
                 injectionInProgress = false;
                 checkAndAddButton();
             }
             // If we're not on the Inspections tab but the button exists, remove it
             else if (!isVehicleDetailsPage() && document.querySelector('.auto-dvic-container')) {
-                console.log('Switched away from Inspections tab, removing button');
                 const buttonContainer = document.querySelector('.auto-dvic-container');
                 if (buttonContainer) {
                     buttonContainer.remove();
@@ -1554,18 +1376,15 @@ function setupTabChangeDetection() {
             event.target.closest('label[for]');
 
         if (clickedTab) {
-            console.log('Tab clicked, will check for button visibility after a short delay');
             // Wait a moment for the UI to update
             setTimeout(() => {
                 // If we're on the Inspections tab and the button doesn't exist, add it
                 if (isVehicleDetailsPage() && !document.querySelector('.auto-dvic-container')) {
-                    console.log('Now on Inspections tab, injecting button');
                     injectionInProgress = false;
                     checkAndAddButton();
                 }
                 // If we're not on the Inspections tab but the button exists, remove it
                 else if (!isVehicleDetailsPage() && document.querySelector('.auto-dvic-container')) {
-                    console.log('Not on Inspections tab, removing button');
                     const buttonContainer = document.querySelector('.auto-dvic-container');
                     if (buttonContainer) {
                         buttonContainer.remove();

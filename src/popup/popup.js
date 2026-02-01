@@ -38,16 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load vehicle info from storage
     async function loadVehicleInfo() {
         try {
-            console.log('Loading vehicle info from storage');
             const result = await chrome.storage.local.get(['vehicleInfo']);
-            console.log('Retrieved from storage:', result);
-            
             if (result.vehicleInfo) {
                 const { lic, lic_state, vin, odo, asset_type } = result.vehicleInfo;
-                console.log('Updating popup with vehicle info:', {
-                    lic, lic_state, vin, odo, asset_type
-                });
-                
                 vehicleLicense.textContent = lic || '-';
                 vehicleState.textContent = lic_state || '-';
                 vehicleVin.textContent = vin || '-';
@@ -55,12 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Populate odometer field if available
                 if (odo) {
-                    console.log('Setting odometer value:', odo);
                     odoInput.value = odo;
                 }
             } else {
-                console.log('No vehicle info found in storage');
-            }
+                }
         } catch (error) {
             console.error('Error loading vehicle info:', error);
         }
@@ -71,11 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Listen for vehicle info updates from content script
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        console.log('Received message in popup:', message);
-        
         if (message.action === 'vehicleInfoUpdated' && message.data) {
-            console.log('Updating popup with new vehicle info:', message.data);
-            
             const { lic, lic_state, vin, odo, asset_type } = message.data;
             vehicleLicense.textContent = lic || '-';
             vehicleState.textContent = lic_state || '-';
@@ -84,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update odometer field if available
             if (odo) {
-                console.log('Setting new odometer value:', odo);
                 odoInput.value = odo;
             }
         } else if (message.action === 'submissionError') {
@@ -111,12 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const minutes = now.getMinutes().toString().padStart(2, '0');
     inspTimeInput.value = `${hours}:${minutes}`;
     
-    console.log('Setting default date and time:', {
-        date: formattedDate,
-        time: `${hours}:${minutes}`,
-        rawDate: now.toString()
-    });
-
     // Load and populate driver list
     async function loadDriverList() {
         try {
@@ -183,12 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Log checkbox state for debugging
-                console.log('Issue checkbox changed:', {
-                    id: this.id,
-                    checked: this.checked,
-                    satisfyCondChecked: satisfyCondCheckbox.checked
                 });
-            });
         });
 
     // Form submission handler
@@ -264,14 +239,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 ...vehicleInfo
             };
 
-            console.log('Form data being prepared:', {
-                ...formData,
-                rawInspectionType: inspectionType,
-                normalizedType: formData.inspectionType,
-                customLocation: diffLocationCheckbox.checked,
-                locationValue: inspLocInput.value
-            });
-            
             // Create a separate issues object and maintain checkbox states
             const issues = {};
             issueCheckboxes.forEach(checkbox => {
@@ -285,8 +252,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             formData.issues = issues;
-
-            console.log('Form data being sent to fillDVICForm:', formData);
 
             // Fill and save PDF
             const result = await fillDVICForm(formData);
