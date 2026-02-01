@@ -98,7 +98,7 @@ async function handleDvicSubmission(formData) {
     console.log('Inspection type from formData:', {
         type: formData.inspectionType,
         typeOf: typeof formData.inspectionType,
-        isPostTrip: formData.inspectionType === 'Post-Trip' || formData.inspectionType.toLowerCase() === 'post',
+        isPostTrip: formData.inspectionType.toLowerCase() === 'post',
         rawValue: formData.inspectionType
     });
 
@@ -251,280 +251,280 @@ async function handleDvicSubmission(formData) {
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) {
             fileInput.addEventListener('change', async () => {
-                // Clean up overlay
-                cleanup();
+                try {
+                    // Clean up overlay
+                    cleanup();
 
-                // Wait for file upload to process
-                await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
+                    // Wait for file upload to process
+                    await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
 
-                // Set inspection type if post-trip
-                const isPostTrip = formData.inspectionType === 'Post-Trip' ||
-                    formData.inspectionType.toLowerCase() === 'post';
-                console.log('Checking inspection type:', {
-                    formDataType: formData.inspectionType,
-                    isPostTrip,
-                    typeComparison: formData.inspectionType === 'Post-Trip',
-                    lowercaseComparison: formData.inspectionType.toLowerCase() === 'post'
-                });
+                    // Set inspection type if post-trip
+                    const isPostTrip = formData.inspectionType.toLowerCase() === 'post';
+                    console.log('Checking inspection type:', {
+                        formDataType: formData.inspectionType,
+                        isPostTrip,
+                        typeComparison: formData.inspectionType === 'Post-Trip',
+                        lowercaseComparison: formData.inspectionType.toLowerCase() === 'post'
+                    });
 
-                if (isPostTrip) {
-                    console.log('Attempting to select Post-Trip inspection type...');
+                    if (isPostTrip) {
+                        console.log('Attempting to select Post-Trip inspection type...');
 
-                    // Wait for radio buttons to be available
-                    await new Promise(resolve => setTimeout(resolve, timing.SHORT_DELAY));
+                        // Wait for radio buttons to be available
+                        await new Promise(resolve => setTimeout(resolve, timing.SHORT_DELAY));
 
-                    // Find all radio buttons first
-                    const allRadios = document.querySelectorAll('input[type="radio"]');
-                    console.log('Found radio buttons:', Array.from(allRadios).map(r => ({
-                        value: r.value,
-                        name: r.name,
-                        type: r.type,
-                        checked: r.checked,
-                        ariaChecked: r.getAttribute('aria-checked'),
-                        class: r.className,
-                        parentText: r.parentElement?.textContent?.trim()
-                    })));
+                        // Find all radio buttons first
+                        const allRadios = document.querySelectorAll('input[type="radio"]');
+                        console.log('Found radio buttons:', Array.from(allRadios).map(r => ({
+                            value: r.value,
+                            name: r.name,
+                            type: r.type,
+                            checked: r.checked,
+                            ariaChecked: r.getAttribute('aria-checked'),
+                            class: r.className,
+                            parentText: r.parentElement?.textContent?.trim()
+                        })));
 
-                    // Try to find post-trip radio
-                    const postTripRadio = Array.from(allRadios).find(radio =>
-                        radio.value === 'POST_TRIP_DVIC' &&
-                        radio.name === 'inspectionType'
-                    );
+                        // Try to find post-trip radio
+                        const postTripRadio = Array.from(allRadios).find(radio =>
+                            radio.value === 'POST_TRIP_DVIC' &&
+                            radio.name === 'inspectionType'
+                        );
 
-                    if (postTripRadio) {
-                        console.log('Found post-trip radio:', {
-                            value: postTripRadio.value,
-                            name: postTripRadio.name,
-                            checked: postTripRadio.checked,
-                            ariaChecked: postTripRadio.getAttribute('aria-checked')
-                        });
-
-                        try {
-                            // Try multiple selection methods
-                            const methods = [
-                                // Method 1: Direct click
-                                async () => {
-                                    postTripRadio.click();
-                                    console.log('Method 1: Clicked radio directly');
-                                    await new Promise(resolve => setTimeout(resolve, timing.MEDIUM_DELAY));
-                                },
-                                // Method 2: Set properties
-                                async () => {
-                                    postTripRadio.checked = true;
-                                    postTripRadio.setAttribute('aria-checked', 'true');
-                                    console.log('Method 2: Set radio properties');
-                                    await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
-                                },
-                                // Method 3: Dispatch events
-                                async () => {
-                                    postTripRadio.dispatchEvent(new Event('change', { bubbles: true }));
-                                    postTripRadio.dispatchEvent(new Event('input', { bubbles: true }));
-                                    console.log('Method 3: Dispatched events');
-                                    await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
-                                },
-                                // Method 4: Click label
-                                async () => {
-                                    const label = postTripRadio.closest('label') ||
-                                        document.querySelector(`label[for="${postTripRadio.id}"]`);
-                                    if (label) {
-                                        label.click();
-                                        console.log('Method 4: Clicked label');
-                                    }
-                                    await new Promise(resolve => setTimeout(resolve, timing.MEDIUM_DELAY));
-                                }
-                            ];
-
-                            // Try each method in sequence
-                            for (const method of methods) {
-                                await method();
-                                // Check if it worked
-                                if (postTripRadio.checked) {
-                                    console.log('Selection successful after method');
-                                    break;
-                                }
-                            }
-
-                            // Final verification
-                            await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
-                            console.log('Final radio state:', {
+                        if (postTripRadio) {
+                            console.log('Found post-trip radio:', {
+                                value: postTripRadio.value,
+                                name: postTripRadio.name,
                                 checked: postTripRadio.checked,
                                 ariaChecked: postTripRadio.getAttribute('aria-checked')
                             });
 
-                        } catch (err) {
-                            console.error('Error selecting post-trip:', err);
+                            try {
+                                // Try multiple selection methods
+                                const methods = [
+                                    // Method 1: Direct click
+                                    async () => {
+                                        postTripRadio.click();
+                                        console.log('Method 1: Clicked radio directly');
+                                        await new Promise(resolve => setTimeout(resolve, timing.MEDIUM_DELAY));
+                                    },
+                                    // Method 2: Set properties
+                                    async () => {
+                                        postTripRadio.checked = true;
+                                        postTripRadio.setAttribute('aria-checked', 'true');
+                                        console.log('Method 2: Set radio properties');
+                                        await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
+                                    },
+                                    // Method 3: Dispatch events
+                                    async () => {
+                                        postTripRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                                        postTripRadio.dispatchEvent(new Event('input', { bubbles: true }));
+                                        console.log('Method 3: Dispatched events');
+                                        await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
+                                    },
+                                    // Method 4: Click label
+                                    async () => {
+                                        const label = postTripRadio.closest('label') ||
+                                            document.querySelector(`label[for="${postTripRadio.id}"]`);
+                                        if (label) {
+                                            label.click();
+                                            console.log('Method 4: Clicked label');
+                                        }
+                                        await new Promise(resolve => setTimeout(resolve, timing.MEDIUM_DELAY));
+                                    }
+                                ];
+
+                                // Try each method in sequence
+                                for (const method of methods) {
+                                    await method();
+                                    // Check if it worked
+                                    if (postTripRadio.checked) {
+                                        console.log('Selection successful after method');
+                                        break;
+                                    }
+                                }
+
+                                // Final verification
+                                await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
+                                console.log('Final radio state:', {
+                                    checked: postTripRadio.checked,
+                                    ariaChecked: postTripRadio.getAttribute('aria-checked')
+                                });
+
+                            } catch (err) {
+                                console.error('Error selecting post-trip:', err);
+                            }
+                        } else {
+                            console.error('Post-trip radio button not found');
                         }
-                    } else {
-                        console.error('Post-trip radio button not found');
                     }
-                }
 
-                // Wait for any animations or state updates
-                await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
+                    // Wait for any animations or state updates
+                    await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
 
-                // Fill in driver name with autocomplete handling
-                async function fillDriverName(retryCount = 0) {
-                    console.log(`Attempting to fill driver name (attempt ${retryCount + 1})`);
+                    // Fill in driver name with autocomplete handling
+                    async function fillDriverName(retryCount = 0) {
+                        console.log(`Attempting to fill driver name (attempt ${retryCount + 1})`);
 
-                    // Only find the input field on first attempt
-                    if (retryCount === 0) {
-                        const driverNameInput = document.querySelector(form.driverInput) ||
-                            document.querySelector(form.driverInputBackup);
+                        // Only find the input field on first attempt
+                        if (retryCount === 0) {
+                            const driverNameInput = document.querySelector(form.driverInput) ||
+                                document.querySelector(form.driverInputBackup);
 
-                        if (!driverNameInput) {
-                            console.error('Driver input not found');
-                            throw new Error('Driver name input not found');
-                        }
-
-                        console.log('Found driver input field');
-
-                        // Store the input field for retries
-                        fillDriverName.inputField = driverNameInput;
-
-                        // Focus and click the input
-                        driverNameInput.focus();
-                        driverNameInput.click();
-                    }
-
-                    const driverNameInput = fillDriverName.inputField;
-
-                    // Set the value and trigger input event
-                    driverNameInput.value = formData.daName;
-                    driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
-
-                    console.log('Set driver name:', formData.daName);
-                    console.log('Expected transporter ID:', formData.transporterId);
-
-                    // Function to verify transporter ID
-                    const verifyTransporterId = () => {
-                        const transporterInput = document.querySelector(form.transporterIdInput);
-                        if (!transporterInput) {
-                            console.log('Transporter ID input not found');
-                            return false;
-                        }
-
-                        // Extract the transporter ID from the input
-                        const currentTransporterId = transporterInput.value.trim();
-                        const expectedTransporterId = formData.transporterId.trim();
-
-                        console.log('Current transporter ID:', currentTransporterId);
-                        console.log('Expected transporter ID:', expectedTransporterId);
-
-                        // If either ID is empty, return false
-                        if (!currentTransporterId || !expectedTransporterId) {
-                            console.log('One or both transporter IDs are empty');
-                            return false;
-                        }
-
-                        // Compare the IDs
-                        const isMatch = currentTransporterId === expectedTransporterId;
-                        console.log('Transporter ID match:', isMatch);
-                        return isMatch;
-                    };
-
-                    // Function to get driver options
-                    const getDriverOptions = async () => {
-                        // First set the driver name to trigger the dropdown
-                        driverNameInput.value = formData.daName;
-                        driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
-
-                        // Find the combobox container
-                        const container = driverNameInput.closest(form.comboboxContainer);
-                        if (!container) {
-                            console.log('Could not find combobox container');
-                            return [];
-                        }
-
-                        // Click the container to open dropdown
-                        container.click();
-                        await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
-
-                        // Focus the input and ensure it has the correct value
-                        driverNameInput.focus();
-                        if (driverNameInput.value !== formData.daName) {
-                            driverNameInput.value = formData.daName;
-                            driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                        await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
-
-                        // Make sure aria-expanded is set
-                        const input = container.querySelector(form.comboboxInput);
-                        if (input) {
-                            input.setAttribute('aria-expanded', 'true');
-                            input.setAttribute('aria-haspopup', 'true');
-                        }
-
-                        // Get options and log them
-                        const options = Array.from(document.querySelectorAll(form.dropdownOption));
-                        options.forEach((opt, i) => {
-                            console.log(`Option ${i + 1}:`, opt.textContent);
-                        });
-
-                        return options;
-                    };
-
-                    // Create a promise that resolves when the correct driver is found
-                    return new Promise(async (resolve) => {
-                        let currentAttempt = 0;
-                        const maxAttempts = 10;
-                        let isResolved = false;
-
-                        const tryDriver = async () => {
-                            if (isResolved) return;
-
-                            // Check if current selection is correct
-                            await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
-                            if (verifyTransporterId()) {
-                                console.log('Current selection has correct transporter ID');
-                                isResolved = true;
-                                resolve();
-                                return;
+                            if (!driverNameInput) {
+                                console.error('Driver input not found');
+                                throw new Error('Driver name input not found');
                             }
 
-                            // If not correct, get options and try next one
-                            const options = await getDriverOptions();
-                            console.log(`Found ${options.length} driver options`);
+                            console.log('Found driver input field');
 
-                            if (currentAttempt < options.length) {
-                                // Click the next option
-                                options[currentAttempt].click();
-                                console.log(`Trying driver option ${currentAttempt + 1} of ${options.length}`);
+                            // Store the input field for retries
+                            fillDriverName.inputField = driverNameInput;
 
-                                // Wait for selection to take effect
+                            // Focus and click the input
+                            driverNameInput.focus();
+                            driverNameInput.click();
+                        }
+
+                        const driverNameInput = fillDriverName.inputField;
+
+                        // Set the value and trigger input event
+                        driverNameInput.value = formData.daName;
+                        driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                        console.log('Set driver name:', formData.daName);
+                        console.log('Expected transporter ID:', formData.transporterId);
+
+                        // Function to verify transporter ID
+                        const verifyTransporterId = () => {
+                            const transporterInput = document.querySelector(form.transporterIdInput);
+                            if (!transporterInput) {
+                                console.log('Transporter ID input not found');
+                                return false;
+                            }
+
+                            // Extract the transporter ID from the input
+                            const currentTransporterId = transporterInput.value.trim();
+                            const expectedTransporterId = formData.transporterId.trim();
+
+                            console.log('Current transporter ID:', currentTransporterId);
+                            console.log('Expected transporter ID:', expectedTransporterId);
+
+                            // If either ID is empty, return false
+                            if (!currentTransporterId || !expectedTransporterId) {
+                                console.log('One or both transporter IDs are empty');
+                                return false;
+                            }
+
+                            // Compare the IDs
+                            const isMatch = currentTransporterId === expectedTransporterId;
+                            console.log('Transporter ID match:', isMatch);
+                            return isMatch;
+                        };
+
+                        // Function to get driver options
+                        const getDriverOptions = async () => {
+                            // First set the driver name to trigger the dropdown
+                            driverNameInput.value = formData.daName;
+                            driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
+
+                            // Find the combobox container
+                            const container = driverNameInput.closest(form.comboboxContainer);
+                            if (!container) {
+                                console.log('Could not find combobox container');
+                                return [];
+                            }
+
+                            // Click the container to open dropdown
+                            container.click();
+                            await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
+
+                            // Focus the input and ensure it has the correct value
+                            driverNameInput.focus();
+                            if (driverNameInput.value !== formData.daName) {
+                                driverNameInput.value = formData.daName;
+                                driverNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                            await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
+
+                            // Make sure aria-expanded is set
+                            const input = container.querySelector(form.comboboxInput);
+                            if (input) {
+                                input.setAttribute('aria-expanded', 'true');
+                                input.setAttribute('aria-haspopup', 'true');
+                            }
+
+                            // Get options and log them
+                            const options = Array.from(document.querySelectorAll(form.dropdownOption));
+                            options.forEach((opt, i) => {
+                                console.log(`Option ${i + 1}:`, opt.textContent);
+                            });
+
+                            return options;
+                        };
+
+                        // Create a promise that resolves when the correct driver is found
+                        return new Promise(async (resolve) => {
+                            let currentAttempt = 0;
+                            const maxAttempts = 10;
+                            let isResolved = false;
+
+                            const tryDriver = async () => {
+                                if (isResolved) return;
+
+                                // Check if current selection is correct
                                 await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
-
-                                // Check if this selection is correct
                                 if (verifyTransporterId()) {
-                                    console.log('Found matching driver with correct transporter ID');
+                                    console.log('Current selection has correct transporter ID');
                                     isResolved = true;
                                     resolve();
                                     return;
                                 }
 
-                                // Try next option if not resolved
-                                if (!isResolved) {
-                                    currentAttempt++;
-                                    if (currentAttempt < maxAttempts) {
-                                        setTimeout(tryDriver, timing.DROPDOWN_DELAY);
-                                    } else {
+                                // If not correct, get options and try next one
+                                const options = await getDriverOptions();
+                                console.log(`Found ${options.length} driver options`);
+
+                                if (currentAttempt < options.length) {
+                                    // Click the next option
+                                    options[currentAttempt].click();
+                                    console.log(`Trying driver option ${currentAttempt + 1} of ${options.length}`);
+
+                                    // Wait for selection to take effect
+                                    await new Promise(resolve => setTimeout(resolve, timing.DROPDOWN_DELAY));
+
+                                    // Check if this selection is correct
+                                    if (verifyTransporterId()) {
+                                        console.log('Found matching driver with correct transporter ID');
+                                        isResolved = true;
+                                        resolve();
+                                        return;
+                                    }
+
+                                    // Try next option if not resolved
+                                    if (!isResolved) {
+                                        currentAttempt++;
+                                        if (currentAttempt < maxAttempts) {
+                                            setTimeout(tryDriver, timing.DROPDOWN_DELAY);
+                                        } else {
+                                            promptManualSelection();
+                                        }
+                                    }
+                                } else {
+                                    if (!isResolved) {
                                         promptManualSelection();
                                     }
                                 }
-                            } else {
-                                if (!isResolved) {
-                                    promptManualSelection();
-                                }
-                            }
-                        };
+                            };
 
-                        const promptManualSelection = () => {
-                            if (isResolved) return;
+                            const promptManualSelection = () => {
+                                if (isResolved) return;
 
-                            console.log('Prompting for manual driver selection');
-                            const rect = driverNameInput.getBoundingClientRect();
-                            const overlay = document.createElement('div');
-                            overlay.style.cssText = `
+                                console.log('Prompting for manual driver selection');
+                                const rect = driverNameInput.getBoundingClientRect();
+                                const overlay = document.createElement('div');
+                                overlay.style.cssText = `
                                 position: fixed;
                                 top: ${rect.top - 5}px;
                                 left: ${rect.left - 5}px;
@@ -536,381 +536,413 @@ async function handleDvicSubmission(formData) {
                                 z-index: 9999;
                                 pointer-events: none;
                             `;
-                            document.body.appendChild(overlay);
+                                document.body.appendChild(overlay);
 
-                            showCustomAlert(
-                                'Driver Selection Required',
-                                'Please select the correct driver manually.'
-                            );
+                                showCustomAlert(
+                                    'Driver Selection Required',
+                                    'Please select the correct driver manually.'
+                                );
 
-                            // Watch for changes to the transporter ID field
-                            const transporterInput = document.querySelector(form.transporterIdInput);
-                            if (transporterInput) {
-                                const observer = new MutationObserver(async () => {
-                                    if (isResolved) {
-                                        observer.disconnect();
-                                        return;
-                                    }
+                                // Watch for changes to the transporter ID field
+                                const transporterInput = document.querySelector(form.transporterIdInput);
+                                if (transporterInput) {
+                                    const observer = new MutationObserver(async () => {
+                                        if (isResolved) {
+                                            observer.disconnect();
+                                            return;
+                                        }
 
-                                    if (verifyTransporterId()) {
-                                        console.log('Correct driver selected by user');
-                                        isResolved = true;
-                                        observer.disconnect();
-                                        document.body.removeChild(overlay);
-                                        resolve();
-                                    }
-                                });
+                                        if (verifyTransporterId()) {
+                                            console.log('Correct driver selected by user');
+                                            isResolved = true;
+                                            observer.disconnect();
+                                            document.body.removeChild(overlay);
+                                            resolve();
+                                        }
+                                    });
 
-                                observer.observe(transporterInput, {
-                                    subtree: true,
-                                    characterData: true,
-                                    childList: true,
-                                    attributes: true
-                                });
-                            }
-                        };
+                                    observer.observe(transporterInput, {
+                                        subtree: true,
+                                        characterData: true,
+                                        childList: true,
+                                        attributes: true
+                                    });
+                                }
+                            };
 
-                        // Start with first attempt
-                        tryDriver();
-                    });
-                }
+                            // Start with first attempt
+                            tryDriver();
+                        });
+                    }
 
-                // Try to fill driver name with retry
-                try {
-                    console.log('Starting driver name fill process');
-                    await fillDriverName(0);
-                } catch (error) {
-                    console.error('Error in driver name fill process:', error);
-                }
+                    // Try to fill driver name with retry
+                    try {
+                        console.log('Starting driver name fill process');
+                        await fillDriverName(0);
+                    } catch (error) {
+                        console.error('Error in driver name fill process:', error);
+                    }
 
-                // Fill in date
-                const dateInput = Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
-                    const label = input.getAttribute('aria-label') || '';
-                    return label.toLowerCase().includes(form.dateInputLabel);
-                });
-
-                if (dateInput) {
-                    // Parse the date parts directly to avoid timezone issues
-                    const [year, month, day] = formData.inspDate.split('-').map(Number);
-                    const formattedDate = `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year}`;
-                    dateInput.value = formattedDate;
-                    dateInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    console.log('Filled in date:', formattedDate);
-
-                    // Wait for UI to update
-                    await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
-                }
-
-                // Fill in time
-                const timeInput = document.querySelector(`input[type="${form.timeInputType}"]`) ||
-                    Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
+                    // Fill in date
+                    const dateInput = Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
                         const label = input.getAttribute('aria-label') || '';
-                        const placeholder = input.getAttribute('placeholder') || '';
-                        return label.toLowerCase().includes(form.timeInputLabel) ||
-                            placeholder.toLowerCase().includes(form.timeInputPlaceholder) ||
-                            input.id?.toLowerCase().includes('time');
+                        return label.toLowerCase().includes(form.dateInputLabel);
                     });
 
-                if (timeInput) {
-                    // Parse the time
-                    const [hours, minutes] = formData.inspTime.split(':');
-                    const hour = parseInt(hours, 10);
+                    if (dateInput) {
+                        // Parse the date parts directly to avoid timezone issues
+                        const [year, month, day] = formData.inspDate.split('-').map(Number);
+                        const formattedDate = `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year}`;
+                        dateInput.value = formattedDate;
+                        dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        console.log('Filled in date:', formattedDate);
 
-                    // Format time as HHMMam/pm (no colon, no spaces)
-                    const hour12 = hour % 12 || 12;
-                    const ampm = hour < 12 ? 'AM' : 'PM';
-                    const formattedTime = `${hour12.toString().padStart(2, '0')}${minutes}${ampm}`;
+                        // Wait for UI to update
+                        await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
+                    }
 
-                    timeInput.value = formattedTime;
-                    timeInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    console.log('Filled in time:', formattedTime);
+                    // Fill in time
+                    const timeInput = document.querySelector(`input[type="${form.timeInputType}"]`) ||
+                        Array.from(document.querySelectorAll('input[type="text"]')).find(input => {
+                            const label = input.getAttribute('aria-label') || '';
+                            const placeholder = input.getAttribute('placeholder') || '';
+                            return label.toLowerCase().includes(form.timeInputLabel) ||
+                                placeholder.toLowerCase().includes(form.timeInputPlaceholder) ||
+                                input.id?.toLowerCase().includes('time');
+                        });
 
-                    // Wait for UI to update
-                    await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
-                }
+                    if (timeInput) {
+                        // Parse the time
+                        const [hours, minutes] = formData.inspTime.split(':');
+                        const hour = parseInt(hours, 10);
 
-                // Handle defects radio selection after all inputs are filled
-                console.log('Handling defects radio selection...');
-                const allRadios = document.querySelectorAll(submission.radioButtons);
-                const defectsRadios = Array.from(allRadios).filter(radio =>
-                    radio.name === issues.defectsRadioName
-                );
+                        // Format time as HHMMam/pm (no colon, no spaces)
+                        const hour12 = hour % 12 || 12;
+                        const ampm = hour < 12 ? 'AM' : 'PM';
+                        const formattedTime = `${hour12.toString().padStart(2, '0')}${minutes}${ampm}`;
 
-                if (defectsRadios.length === 2) {
-                    // Check if there are any issues selected
-                    const hasIssues = formData.issues && Object.keys(formData.issues).length > 0;
-                    console.log('Checking for issues:', { hasIssues, issues: formData.issues });
+                        timeInput.value = formattedTime;
+                        timeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        console.log('Filled in time:', formattedTime);
 
-                    // If no issues were selected, select "No"
-                    if (!hasIssues) {
-                        const noDefectsRadio = defectsRadios.find(radio => radio.value === 'false');
-                        if (noDefectsRadio) {
-                            console.log('No issues found, selecting "No" for defects');
-                            noDefectsRadio.click();
-                            await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
+                        // Wait for UI to update
+                        await new Promise(resolve => setTimeout(resolve, timing.UI_UPDATE_DELAY));
+                    }
+
+                    // Handle defects radio selection after all inputs are filled
+                    console.log('Handling defects radio selection...');
+                    const allRadios = document.querySelectorAll(submission.radioButtons);
+                    const defectsRadios = Array.from(allRadios).filter(radio =>
+                        radio.name === issues.defectsRadioName
+                    );
+
+                    if (defectsRadios.length === 2) {
+                        // Check if there are any issues selected
+                        const hasIssues = formData.issues && Object.keys(formData.issues).length > 0;
+                        console.log('Checking for issues:', { hasIssues, issues: formData.issues });
+
+                        // If no issues were selected, select "No"
+                        if (!hasIssues) {
+                            const noDefectsRadio = defectsRadios.find(radio => radio.value === 'false');
+                            if (noDefectsRadio) {
+                                console.log('No issues found, selecting "No" for defects');
+                                noDefectsRadio.click();
+                                await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
+                            }
+                        } else {
+                            // If issues were selected, select "Yes"
+                            const yesDefectsRadio = defectsRadios.find(radio => radio.value === 'true');
+                            if (yesDefectsRadio) {
+                                console.log('Issues found, selecting "Yes" for defects');
+                                yesDefectsRadio.click();
+                                await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
+                            }
                         }
                     } else {
-                        // If issues were selected, select "Yes"
-                        const yesDefectsRadio = defectsRadios.find(radio => radio.value === 'true');
-                        if (yesDefectsRadio) {
-                            console.log('Issues found, selecting "Yes" for defects');
-                            yesDefectsRadio.click();
-                            await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
-                        }
+                        console.error('Could not find defects radio buttons');
                     }
-                } else {
-                    console.error('Could not find defects radio buttons');
-                }
 
-                // Wait for any animations or state updates
-                await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
+                    // Wait for any animations or state updates
+                    await new Promise(resolve => setTimeout(resolve, timing.ANIMATION_DELAY));
 
-                // Find and click the Next button
-                const nextButton = Array.from(document.querySelectorAll('button')).find(btn => {
-                    const text = btn.textContent.trim().toLowerCase();
-                    // Strip dot for className check
-                    return btn.className.includes(getClassName(submission.nextButtonClass)) && (
-                        text.includes('next: review & submit') ||
-                        text.includes('next: select defects')
-                    );
-                });
+                    // Find and click the Next button
+                    const nextButton = Array.from(document.querySelectorAll('button')).find(btn => {
+                        const text = btn.textContent.trim().toLowerCase();
+                        // Strip dot for className check
+                        return btn.classList.contains(getClassName(submission.nextButtonClass)) && (
+                            text.includes('next: review & submit') ||
+                            text.includes('next: select defects')
+                        );
+                    });
 
-                if (nextButton) {
-                    console.log('Clicking next button:', nextButton.textContent.trim());
-                    nextButton.click();
+                    if (nextButton) {
+                        console.log('Clicking next button:', nextButton.textContent.trim());
+                        nextButton.click();
 
-                    // If we have issues, handle the issue selection page
-                    if (formData.issues && Object.keys(formData.issues).length > 0) {
-                        console.log('Issues found, waiting for defects page to load...');
-                        await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
+                        // If we have issues, handle the issue selection page
+                        if (formData.issues && Object.keys(formData.issues).length > 0) {
+                            console.log('Issues found, waiting for defects page to load...');
+                            await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
 
-                        // First expand all dropdowns
-                        const dropdowns = document.querySelectorAll(issues.dropdownExpand);
-                        console.log('Found dropdowns to expand:', dropdowns.length);
+                            // First expand all dropdowns
+                            const dropdowns = document.querySelectorAll(issues.dropdownExpand);
+                            console.log('Found dropdowns to expand:', dropdowns.length);
 
-                        for (const dropdown of dropdowns) {
-                            const expandButton = dropdown.firstElementChild;
-                            if (expandButton) {
-                                expandButton.click();
-                                await new Promise(resolve => setTimeout(resolve, timing.SHORT_DELAY));
-                            }
-                        }
-
-                        // Wait for all dropdowns to fully expand
-                        await new Promise(resolve => setTimeout(resolve, 250 /* deliberately keeping hardcoded as it's a visual delay specific to this loop */));
-
-                        const formIssues = formData.issues || {};
-                        console.log('Processing issues:', formIssues);
-
-                        // Create mapping of issue IDs to their exact text in the fleet portal
-                        // Get mappings from global object
-                        const { issueMapping, categoryMapping } = window.AutoDVIC_Mappings || {};
-
-                        if (!issueMapping || !categoryMapping) {
-                            console.error('Mappings not found in window.AutoDVIC_Mappings');
-                            throw new Error('Critical: Issue mappings not loaded');
-                        }
-
-                        // Keep track of issues we couldn't find
-                        const unfoundIssues = [];
-
-                        // Process each issue
-                        for (const [issueId, issueText] of Object.entries(formIssues)) {
-                            // Get the exact text from our mapping
-                            const fleetPortalText = issueMapping[issueId];
-                            if (!fleetPortalText) {
-                                console.error('No fleet portal text mapping found for issue:', issueId);
-                                continue;
+                            for (const dropdown of dropdowns) {
+                                const expandButton = dropdown.firstElementChild;
+                                if (expandButton) {
+                                    expandButton.click();
+                                    await new Promise(resolve => setTimeout(resolve, timing.SHORT_DELAY));
+                                }
                             }
 
-                            // Get category and subcategory from our mapping
-                            const mappingInfo = categoryMapping[issueId];
-                            if (!mappingInfo) {
-                                console.error('No category/subcategory mapping found for issue:', issueId);
-                                continue;
+                            // Wait for all dropdowns to fully expand
+                            await new Promise(resolve => setTimeout(resolve, 250 /* deliberately keeping hardcoded as it's a visual delay specific to this loop */));
+
+                            const formIssues = formData.issues || {};
+                            console.log('Processing issues:', formIssues);
+
+                            // Create mapping of issue IDs to their exact text in the fleet portal
+                            // Get mappings from global object
+                            const { issueMapping, categoryMapping } = window.AutoDVIC_Mappings || {};
+
+                            if (!issueMapping || !categoryMapping) {
+                                console.error('Mappings not found in window.AutoDVIC_Mappings');
+                                throw new Error('Critical: Issue mappings not loaded');
                             }
 
-                            console.log('Looking for issue:', {
-                                id: issueId,
-                                text: fleetPortalText,
-                                category: mappingInfo.category,
-                                subcategory: mappingInfo.subcategory
-                            });
+                            // Keep track of issues we couldn't find
+                            const unfoundIssues = [];
 
-                            let found = false;
-
-                            // Find all category sections
-                            const categoryContainers = document.querySelectorAll(issues.categoryContainer);
-                            console.log('Found category sections:', categoryContainers.length);
-
-                            // Search through each category section
-                            for (const container of categoryContainers) {
-                                // Find the category text - try multiple selectors since the structure might vary
-                                let categoryText = '';
-                                const categoryDiv = container.querySelector(issues.categoryHeader);
-
-                                if (categoryDiv) {
-                                    categoryText = categoryDiv.textContent?.trim();
-                                } else {
-                                    console.log('Could not find category text element, skipping section');
+                            // Process each issue
+                            for (const [issueId, issueText] of Object.entries(formIssues)) {
+                                // Get the exact text from our mapping
+                                const fleetPortalText = issueMapping[issueId];
+                                if (!fleetPortalText) {
+                                    console.error('No fleet portal text mapping found for issue:', issueId);
                                     continue;
                                 }
 
-                                if (!categoryText) {
-                                    console.log('Category text is empty, skipping section');
+                                // Get category and subcategory from our mapping
+                                const mappingInfo = categoryMapping[issueId];
+                                if (!mappingInfo) {
+                                    console.error('No category/subcategory mapping found for issue:', issueId);
                                     continue;
                                 }
 
-                                console.log('Found category text:', categoryText);
-
-                                // Check if this is the matching category
-                                if (categoryText === mappingInfo.category) {
-                                    console.log('Found matching category:', categoryText);
-
-                                    // Get the parent category container
-                                    const categoryContainer = categoryDiv.closest(issues.categoryContainer);
-                                    if (!categoryContainer) {
-                                        console.log('Could not find category container');
-                                        continue;
-                                    }
-
-                                    // Find subcategories in this category container
-                                    const subcategories = categoryContainer.querySelectorAll(issues.subcategory);
-                                    console.log('Found subcategories in category:', subcategories.length);
-
-                                    // Find the matching subcategory
-                                    let matchingSubcategory = null;
-                                    for (const sub of subcategories) {
-                                        if (sub.textContent.trim() === mappingInfo.subcategory) {
-                                            matchingSubcategory = sub;
-                                            break;
-                                        }
-                                    }
-
-                                    if (!matchingSubcategory) {
-                                        console.log('Subcategory not found in this category section:', mappingInfo.subcategory);
-                                        continue;
-                                    }
-
-                                    console.log('Found matching subcategory:', mappingInfo.subcategory);
-
-                                    // Find the issues container
-                                    const issuesContainer = categoryContainer.querySelector(issues.issuesContainer);
-                                    if (!issuesContainer) {
-                                        console.log('Could not find issues container');
-                                        continue;
-                                    }
-
-                                    console.log('Found issues container');
-
-                                    // Find the fieldset containing the issues
-                                    const issuesFieldset = issuesContainer.querySelector(issues.issuesFieldset);
-                                    if (!issuesFieldset) {
-                                        console.log('Could not find issues fieldset');
-                                        continue;
-                                    }
-
-                                    console.log('Found issues fieldset');
-
-                                    // Find all issue elements in the fieldset
-                                    const issueElements = issuesFieldset.querySelectorAll(issues.issueElement);
-                                    console.log('Found issue elements:', issueElements.length);
-
-                                    // Look for exact text match in each issue element
-                                    for (const issueElement of issueElements) {
-                                        // Get the text from the div inside the label
-                                        const issueDiv = issueElement.querySelector(issues.issueLabelDiv);
-                                        if (!issueDiv) continue;
-
-                                        const issueText = issueDiv.textContent.trim();
-                                        if (issueText === fleetPortalText) {
-                                            console.log('Found exact match:', {
-                                                category: mappingInfo.category,
-                                                subcategory: mappingInfo.subcategory,
-                                                text: issueText
-                                            });
-
-                                            // Find the checkbox which is an input inside the label
-                                            const checkbox = issueElement.querySelector(issues.issueCheckbox);
-                                            if (checkbox && !checkbox.checked) {
-                                                console.log('Clicking checkbox for:', {
-                                                    category: mappingInfo.category,
-                                                    subcategory: mappingInfo.subcategory,
-                                                    text: issueText
-                                                });
-                                                checkbox.click();
-                                                await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
-                                                found = true;
-                                                break;
-                                            } else {
-                                                console.error('Checkbox not found or already checked:', {
-                                                    issueId,
-                                                    category: mappingInfo.category,
-                                                    subcategory: mappingInfo.subcategory,
-                                                    text: issueText,
-                                                    checkboxFound: !!checkbox,
-                                                    isChecked: checkbox?.checked
-                                                });
-                                            }
-                                        }
-                                    }
-
-                                    if (found) break;
-                                }
-                            }
-
-                            if (!found) {
-                                console.error('No matching issue found for:', {
-                                    issueId,
-                                    category: mappingInfo.category,
-                                    subcategory: mappingInfo.subcategory,
-                                    text: fleetPortalText
-                                });
-                                unfoundIssues.push({
+                                console.log('Looking for issue:', {
+                                    id: issueId,
                                     text: fleetPortalText,
                                     category: mappingInfo.category,
                                     subcategory: mappingInfo.subcategory
                                 });
+
+                                let found = false;
+
+                                // Find all category sections
+                                const categoryContainers = document.querySelectorAll(issues.categoryContainer);
+                                console.log('Found category sections:', categoryContainers.length);
+
+                                // Search through each category section
+                                for (const container of categoryContainers) {
+                                    // Find the category text - try multiple selectors since the structure might vary
+                                    let categoryText = '';
+                                    const categoryDiv = container.querySelector(issues.categoryHeader);
+
+                                    if (categoryDiv) {
+                                        categoryText = categoryDiv.textContent?.trim();
+                                    } else {
+                                        console.log('Could not find category text element, skipping section');
+                                        continue;
+                                    }
+
+                                    if (!categoryText) {
+                                        console.log('Category text is empty, skipping section');
+                                        continue;
+                                    }
+
+                                    console.log('Found category text:', categoryText);
+
+                                    // Check if this is the matching category
+                                    if (categoryText === mappingInfo.category) {
+                                        console.log('Found matching category:', categoryText);
+
+                                        // Get the parent category container
+                                        const categoryContainer = categoryDiv.closest(issues.categoryContainer);
+                                        if (!categoryContainer) {
+                                            console.log('Could not find category container');
+                                            continue;
+                                        }
+
+                                        // Find subcategories in this category container
+                                        const subcategories = categoryContainer.querySelectorAll(issues.subcategory);
+                                        console.log('Found subcategories in category:', subcategories.length);
+
+                                        // Find the matching subcategory
+                                        let matchingSubcategory = null;
+                                        for (const sub of subcategories) {
+                                            if (sub.textContent.trim() === mappingInfo.subcategory) {
+                                                matchingSubcategory = sub;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!matchingSubcategory) {
+                                            console.log('Subcategory not found in this category section:', mappingInfo.subcategory);
+                                            continue;
+                                        }
+
+                                        console.log('Found matching subcategory:', mappingInfo.subcategory);
+
+                                        // Find the issues container
+                                        const issuesContainer = categoryContainer.querySelector(issues.issuesContainer);
+                                        if (!issuesContainer) {
+                                            console.log('Could not find issues container');
+                                            continue;
+                                        }
+
+                                        console.log('Found issues container');
+
+                                        // Find the fieldset containing the issues
+                                        const issuesFieldset = issuesContainer.querySelector(issues.issuesFieldset);
+                                        if (!issuesFieldset) {
+                                            console.log('Could not find issues fieldset');
+                                            continue;
+                                        }
+
+                                        console.log('Found issues fieldset');
+
+                                        // Find all issue elements in the fieldset
+                                        const issueElements = issuesFieldset.querySelectorAll(issues.issueElement);
+                                        console.log('Found issue elements:', issueElements.length);
+
+                                        // Look for exact text match in each issue element
+                                        for (const issueElement of issueElements) {
+                                            // Get the text from the div inside the label
+                                            const issueDiv = issueElement.querySelector(issues.issueLabelDiv);
+                                            if (!issueDiv) continue;
+
+                                            const issueText = issueDiv.textContent.trim();
+                                            if (issueText === fleetPortalText) {
+                                                console.log('Found exact match:', {
+                                                    category: mappingInfo.category,
+                                                    subcategory: mappingInfo.subcategory,
+                                                    text: issueText
+                                                });
+
+                                                // Find the checkbox which is an input inside the label
+                                                const checkbox = issueElement.querySelector(issues.issueCheckbox);
+                                                if (checkbox && !checkbox.checked) {
+                                                    console.log('Clicking checkbox for:', {
+                                                        category: mappingInfo.category,
+                                                        subcategory: mappingInfo.subcategory,
+                                                        text: issueText
+                                                    });
+                                                    checkbox.click();
+                                                    await new Promise(resolve => setTimeout(resolve, timing.SELECTION_DELAY));
+                                                    found = true;
+                                                    break;
+                                                } else {
+                                                    console.error('Checkbox not found or already checked:', {
+                                                        issueId,
+                                                        category: mappingInfo.category,
+                                                        subcategory: mappingInfo.subcategory,
+                                                        text: issueText,
+                                                        checkboxFound: !!checkbox,
+                                                        isChecked: checkbox?.checked
+                                                    });
+                                                }
+                                            }
+                                        }
+
+                                        if (found) break;
+                                    }
+                                }
+
+                                if (!found) {
+                                    console.error('No matching issue found for:', {
+                                        issueId,
+                                        category: mappingInfo.category,
+                                        subcategory: mappingInfo.subcategory,
+                                        text: fleetPortalText
+                                    });
+                                    unfoundIssues.push({
+                                        text: fleetPortalText,
+                                        category: mappingInfo.category,
+                                        subcategory: mappingInfo.subcategory
+                                    });
+                                }
                             }
-                        }
 
-                        // After processing all issues, check if we had any unfound ones
-                        if (unfoundIssues.length > 0) {
-                            // Create a message listing all unfound issues
-                            let message = 'Some issues could not be automatically selected. Please manually select these issues:\n\n';
-                            unfoundIssues.forEach(issue => {
-                                message += `• ${issue.text}\n   Category: ${issue.category}\n   Subcategory: ${issue.subcategory}\n\n`;
+                            // After processing all issues, check if we had any unfound ones
+                            if (unfoundIssues.length > 0) {
+                                // Create a message listing all unfound issues
+                                let message = 'Some issues could not be automatically selected. Please manually select these issues:\n\n';
+                                unfoundIssues.forEach(issue => {
+                                    message += `• ${issue.text}\n   Category: ${issue.category}\n   Subcategory: ${issue.subcategory}\n\n`;
+                                });
+                                message += '\nAfter selecting these issues, please click the "Review and Submit" button to continue.';
+
+                                // Show the notification
+                                chrome.runtime.sendMessage({
+                                    action: 'showNotification',
+                                    title: 'Manual Selection Required',
+                                    message: message
+                                });
+
+                                return; // Stop here and let user handle it manually
+                            }
+
+                            // If all issues were found, continue with automation
+                            const reviewButton = Array.from(document.querySelectorAll('button')).find(btn => {
+                                const text = btn.textContent.trim().toLowerCase();
+                                // Strip dot for className check
+                                return btn.classList.contains(getClassName(submission.nextButtonClass)) &&
+                                    (text.includes('review') || text.includes('next'));
                             });
-                            message += '\nAfter selecting these issues, please click the "Review and Submit" button to continue.';
+                            if (reviewButton) {
+                                console.log('Clicking review button:', reviewButton.textContent.trim());
+                                reviewButton.click();
 
-                            // Show the notification
-                            chrome.runtime.sendMessage({
-                                action: 'showNotification',
-                                title: 'Manual Selection Required',
-                                message: message
-                            });
+                                // Wait for review page to load
+                                await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
 
-                            return; // Stop here and let user handle it manually
-                        }
+                                // Find and log the final submit button
+                                const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
+                                    const text = btn.textContent.trim().toLowerCase();
+                                    return btn.classList.contains(getClassName(submission.submitButtonClass)) && text === 'submit inspection';
+                                });
 
-                        // If all issues were found, continue with automation
-                        const reviewButton = Array.from(document.querySelectorAll('button')).find(btn => {
-                            const text = btn.textContent.trim().toLowerCase();
-                            // Strip dot for className check
-                            return btn.className.includes(getClassName(submission.nextButtonClass)) &&
-                                (text.includes('review') || text.includes('next'));
-                        });
-                        if (reviewButton) {
-                            console.log('Clicking review button:', reviewButton.textContent.trim());
-                            reviewButton.click();
+                                if (submitButton) {
+                                    console.log('Found submit button:', {
+                                        text: submitButton.textContent.trim(),
+                                        class: submitButton.className,
+                                        disabled: submitButton.disabled,
+                                        type: submitButton.type
+                                    });
 
-                            // Wait for review page to load
+                                    // Check if development mode is enabled
+                                    const { devMode } = await chrome.storage.sync.get({ devMode: false });
+                                    if (devMode) {
+                                        console.log('Development mode enabled - skipping submission');
+                                        showCustomAlert('Dev Mode', 'Form submission skipped (development mode enabled)');
+                                    } else {
+                                        console.log('Submitting inspection...');
+                                        submitButton.click();
+                                    }
+                                } else {
+                                    console.error('Could not find submit button');
+                                }
+                            } else {
+                                console.error('Could not find review button');
+                            }
+                        } else {
+                            // No issues case - wait for page change and log submit
                             await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
 
-                            // Find and log the final submit button
                             const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
                                 const text = btn.textContent.trim().toLowerCase();
-                                return btn.className.includes(getClassName(submission.submitButtonClass)) && text === 'submit inspection';
+                                return btn.classList.contains(getClassName(submission.submitButtonClass)) && text === 'submit inspection';
                             });
 
                             if (submitButton) {
@@ -933,41 +965,17 @@ async function handleDvicSubmission(formData) {
                             } else {
                                 console.error('Could not find submit button');
                             }
-                        } else {
-                            console.error('Could not find review button');
                         }
                     } else {
-                        // No issues case - wait for page change and log submit
-                        await new Promise(resolve => setTimeout(resolve, timing.PAGE_LOAD_DELAY));
-
-                        const submitButton = Array.from(document.querySelectorAll('button')).find(btn => {
-                            const text = btn.textContent.trim().toLowerCase();
-                            return btn.className.includes(getClassName(submission.submitButtonClass)) && text === 'submit inspection';
-                        });
-
-                        if (submitButton) {
-                            console.log('Found submit button:', {
-                                text: submitButton.textContent.trim(),
-                                class: submitButton.className,
-                                disabled: submitButton.disabled,
-                                type: submitButton.type
-                            });
-
-                            // Check if development mode is enabled
-                            const { devMode } = await chrome.storage.sync.get({ devMode: false });
-                            if (devMode) {
-                                console.log('Development mode enabled - skipping submission');
-                                showCustomAlert('Dev Mode', 'Form submission skipped (development mode enabled)');
-                            } else {
-                                console.log('Submitting inspection...');
-                                submitButton.click();
-                            }
-                        } else {
-                            console.error('Could not find submit button');
-                        }
+                        console.error('Next button not found');
                     }
-                } else {
-                    console.error('Next button not found');
+                } catch (err) {
+                    console.error('Error during submission flow:', err);
+                    cleanup();
+                    chrome.runtime.sendMessage({
+                        action: 'submissionError',
+                        error: err.message
+                    });
                 }
             });
         }
