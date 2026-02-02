@@ -327,6 +327,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Feedback Handling
+    const feedbackBtn = document.getElementById('feedbackBtn');
+    const feedbackModal = document.getElementById('feedbackModal');
+    const closeModal = document.querySelector('.close-modal');
+    const feedbackOptions = document.querySelectorAll('.feedback-option');
+
+    if (feedbackBtn && feedbackModal) {
+        feedbackBtn.addEventListener('click', () => {
+            feedbackModal.style.display = 'flex';
+            // Small delay to allow display:flex to apply before adding opacity class
+            requestAnimationFrame(() => {
+                feedbackModal.classList.add('show');
+            });
+        });
+
+        const closeFeedback = () => {
+            feedbackModal.classList.remove('show');
+            setTimeout(() => {
+                feedbackModal.style.display = 'none';
+            }, 200);
+        };
+
+        if (closeModal) {
+            closeModal.addEventListener('click', closeFeedback);
+        }
+
+        // Close on click outside
+        feedbackModal.addEventListener('click', (e) => {
+            if (e.target === feedbackModal) {
+                closeFeedback();
+            }
+        });
+
+        // Handle options
+        feedbackOptions.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                const subject = `[${type}] Auto-DVIC Feedback`;
+                const email = 'dev@harveyrustman.com';
+                const body = 'Please describe your feedback here...';
+                
+                const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                
+                // Open mailto link
+                chrome.tabs.create({ url: mailtoLink });
+                
+                closeFeedback();
+            });
+        });
+    }
+
     // Notify content script when popup is closing
     window.addEventListener('beforeunload', function() {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -342,4 +393,53 @@ document.addEventListener('DOMContentLoaded', function() {
             loadDriverList();
         }
     });
+
+    // Load saved settings including theme
+    chrome.storage.sync.get({
+        theme: 'system'
+    }, function(items) {
+        if (items.theme !== 'system') {
+            document.documentElement.setAttribute('data-theme', items.theme);
+        }
+    });
+
+    // Connection Health Check
+    const checkConnection = async () => {
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!tab) return; 
+
+            // Only check connection on Amazon Fleet Portal pages
+            if (tab.url && tab.url.includes('logistics.amazon.com/fleet-management')) {
+                // Try to ping the content script
+                chrome.tabs.sendMessage(tab.id, { action: 'ping' }, (response) => {
+                    if (chrome.runtime.lastError || !response || response.status !== 'pong') {
+                        showConnectionError();
+                    }
+                });
+            }
+        } catch (error) {
+            // If we can't even query tabs, something is wrong, but we shouldn't block the UI
+            // unless we are sure we are on the target page.
+            console.error('Connection check failed:', error);
+        }
+    };
+
+    const showConnectionError = () => {
+        const errorOverlay = document.getElementById('connectionError');
+        if (errorOverlay) {
+            errorOverlay.classList.add('visible');
+        }
+    };
+
+    const reloadBtn = document.getElementById('reloadBtn');
+    if (reloadBtn) {
+        reloadBtn.addEventListener('click', () => {
+            chrome.tabs.reload();
+            window.close();
+        });
+    }
+
+    // Run check on load
+    checkConnection();
 });

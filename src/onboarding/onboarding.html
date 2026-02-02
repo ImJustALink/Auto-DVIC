@@ -132,6 +132,14 @@
                     <span class="toggle-slider"></span>
                 </label>
             </div>
+            <div class="toggle-group">
+                <span class="toggle-label">Theme</span>
+                <select id="themeSelect" style="width: auto; padding: 8px 32px 8px 12px; font-size: 14px;">
+                    <option value="system">System Default</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
         </div>
 
         <div class="settings-section">
@@ -151,10 +159,49 @@
             </div>
         </div>
 
+        <div class="settings-section">
+            <h2>Support & Feedback</h2>
+            <p class="section-description">
+                Have a question, found a bug, or have a feature request? We'd love to hear from you!
+            </p>
+            <button id="feedbackBtn" class="secondary-button" style="width: 100%; justify-content: center;">
+                Send Feedback
+            </button>
+        </div>
+
         <div class="onboarding-footer">
             <button id="saveSettings">Save Settings</button>
         </div>
     </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Send Feedback</h3>
+                <button type="button" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>What's on your mind?</p>
+                <div class="feedback-options">
+                    <button type="button" class="feedback-option" data-type="Issue">
+                        🐞 Report an Issue
+                    </button>
+                    <button type="button" class="feedback-option" data-type="Feature Request">
+                        💡 Feature Request
+                    </button>
+                    <button type="button" class="feedback-option" data-type="Feedback">
+                        💬 General Feedback
+                    </button>
+                    <button type="button" class="feedback-option" data-type="Other">
+                        📝 Other
+                    </button>
+                </div>
+                <p class="modal-note">This will open your default email client addressed to dev@harveyrustman.com.</p>
+            </div>
+        </div>
+    </div>
+
     <script src="onboarding.js"></script>
 </body>
 </html>

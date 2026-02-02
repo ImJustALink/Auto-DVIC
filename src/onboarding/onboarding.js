@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const driverCsvInput = document.getElementById('driverCsv');
     const showNotificationsToggle = document.getElementById('showNotifications');
     const askSaveLocationToggle = document.getElementById('askSaveLocation');
+    const themeSelect = document.getElementById('themeSelect');
     const devModeToggle = document.getElementById('devMode');
     const saveButton = document.getElementById('saveSettings');
     
@@ -106,6 +107,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
+    // Handle theme change
+    if (themeSelect) {
+        themeSelect.addEventListener('change', function() {
+            applyTheme(this.value);
+        });
+    }
+
+    function applyTheme(theme) {
+        if (theme === 'system') {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+    }
+
     // Handle input changes for onboarding state
     dspCodeInput.addEventListener('input', function() {
         updateOnboardingState('dsp', !!this.value.trim());
@@ -140,6 +156,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 stationCode: stationCodeInput.value.trim(),
                 showNotifications: showNotificationsToggle.checked,
                 askSaveLocation: askSaveLocationToggle.checked,
+                theme: themeSelect ? themeSelect.value : 'system',
                 devMode: devModeToggle.checked,
                 setupComplete: true,
                 onboardingComplete: true
@@ -202,6 +219,56 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Save that onboarding is not complete
         chrome.storage.sync.set({ onboardingComplete: false });
     });
+
+    // Feedback Handling
+    const feedbackBtn = document.getElementById('feedbackBtn');
+    const feedbackModal = document.getElementById('feedbackModal');
+    const closeModal = document.querySelector('.close-modal');
+    const feedbackOptions = document.querySelectorAll('.feedback-option');
+
+    if (feedbackBtn && feedbackModal) {
+        feedbackBtn.addEventListener('click', () => {
+            feedbackModal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                feedbackModal.classList.add('show');
+            });
+        });
+
+        const closeFeedback = () => {
+            feedbackModal.classList.remove('show');
+            setTimeout(() => {
+                feedbackModal.style.display = 'none';
+            }, 200);
+        };
+
+        if (closeModal) {
+            closeModal.addEventListener('click', closeFeedback);
+        }
+
+        // Close on click outside
+        feedbackModal.addEventListener('click', (e) => {
+            if (e.target === feedbackModal) {
+                closeFeedback();
+            }
+        });
+
+        // Handle options
+        feedbackOptions.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                const subject = `[${type}] Auto-DVIC Feedback`;
+                const email = 'dev@harveyrustman.com';
+                const body = 'Please describe your feedback here...';
+                
+                const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                
+                // Open mailto link
+                window.location.href = mailtoLink;
+                
+                closeFeedback();
+            });
+        });
+    }
 
     // Helper functions
     function showError(element, message) {
