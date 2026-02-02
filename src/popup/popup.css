@@ -6,7 +6,7 @@ body {
     padding: 0;
     background-color: var(--background);
     color: var(--text-primary);
-    min-width: 320px;
+    min-width: 350px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -14,7 +14,7 @@ body {
 .container {
     padding: 24px 16px;
     width: 100%;
-    max-width: 370px;
+    max-width: 420px;
     margin: 0 auto;
     box-sizing: border-box;
 }
