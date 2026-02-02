@@ -391,12 +391,7 @@ async function handleDvicSubmission(formData) {
                                 input.setAttribute('aria-haspopup', 'true');
                             }
 
-                            // Get options and log them
-                            const options = Array.from(document.querySelectorAll(form.dropdownOption));
-                            options.forEach((opt, i) => {
-                                });
-
-                            return options;
+                            return Array.from(document.querySelectorAll(form.dropdownOption));
                         };
 
                         // Create a promise that resolves when the correct driver is found

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Auto DVIC",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Automates DVIC form filling and submission for Amazon Fleet Portal",
   "permissions": [
     "activeTab",
