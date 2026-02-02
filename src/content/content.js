@@ -347,7 +347,7 @@ async function handleDvicSubmission(formData) {
 
                             // Extract the transporter ID from the input
                             const currentTransporterId = transporterInput.value.trim();
-                            const expectedTransporterId = formData.transporterId.trim();
+                            const expectedTransporterId = String(formData.transporterId || '').trim();
 
                             // If either ID is empty, return false
                             if (!currentTransporterId || !expectedTransporterId) {
@@ -492,6 +492,10 @@ async function handleDvicSubmission(formData) {
                                     // Add event listeners
                                     transporterInput.addEventListener('input', checkTransporterId);
                                     transporterInput.addEventListener('change', checkTransporterId);
+                                } else {
+                                    // Transporter input not found - resolve anyway and let user proceed manually
+                                    console.error('Transporter ID input not found');
+                                    resolve();
                                 }
                             };
 

@@ -160,8 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     issuesContainer.style.display = 'block';
                 }
                 
-                // Log checkbox state for debugging
-                });
+            });
         });
 
     // Form submission handler
