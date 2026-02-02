@@ -467,26 +467,24 @@ async function handleDvicSubmission(formData) {
                                 // Watch for changes to the transporter ID field
                                 const transporterInput = document.querySelector(form.transporterIdInput);
                                 if (transporterInput) {
-                                    const observer = new MutationObserver(async () => {
-                                        if (isResolved) {
-                                            observer.disconnect();
-                                            return;
-                                        }
+                                    const checkTransporterId = () => {
+                                        if (isResolved) return;
 
                                         if (verifyTransporterId()) {
                                             isResolved = true;
-                                            observer.disconnect();
-                                            document.body.removeChild(overlay);
+                                            // Cleanup
+                                            transporterInput.removeEventListener('input', checkTransporterId);
+                                            transporterInput.removeEventListener('change', checkTransporterId);
+                                            if (document.body.contains(overlay)) {
+                                                document.body.removeChild(overlay);
+                                            }
                                             resolve();
                                         }
-                                    });
+                                    };
 
-                                    observer.observe(transporterInput, {
-                                        subtree: true,
-                                        characterData: true,
-                                        childList: true,
-                                        attributes: true
-                                    });
+                                    // Add event listeners
+                                    transporterInput.addEventListener('input', checkTransporterId);
+                                    transporterInput.addEventListener('change', checkTransporterId);
                                 }
                             };
 

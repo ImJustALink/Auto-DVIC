@@ -75,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else if (message.action === 'submissionError') {
             console.error('Submission error:', message.error);
-            progressContainer.style.display = 'none';
             form.style.opacity = '1';
             form.style.pointerEvents = 'auto';
             statusDiv.textContent = 'Error during submission: ' + message.error;
