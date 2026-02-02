@@ -228,10 +228,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         drivers.slice(0, 5).forEach(driver => {
             const item = document.createElement('div');
             item.className = 'driver-item';
-            item.innerHTML = `
-                <span class="driver-name">${driver.name}</span>
-                <span class="driver-id">${driver.transporterId}</span>
-            `;
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'driver-name';
+            nameSpan.textContent = driver.name;
+            
+            const idSpan = document.createElement('span');
+            idSpan.className = 'driver-id';
+            idSpan.textContent = driver.transporterId;
+            
+            item.appendChild(nameSpan);
+            item.appendChild(idSpan);
+            
             driverList.appendChild(item);
         });
 

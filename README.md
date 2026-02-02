@@ -10,7 +10,9 @@ Auto DVIC/
 │   ├── background/             # Background scripts
 │   │   └── background.js       # Main background service worker
 │   ├── content/                # Content scripts
-│   │   └── content.js          # Vehicle info gathering and Fleet Portal interaction
+│   │   ├── content.js          # Vehicle info gathering and Fleet Portal interaction
+│   │   ├── selectors.js        # DOM Selectors configuration
+│   │   └── issue-mappings.js   # Issue mapping configuration
 │   ├── styles/                 # CSS styles
 │   │   └── common.css          # Common styles
 │   ├── utils/                  # Utility scripts
@@ -98,6 +100,12 @@ Auto DVIC/
 ### User Experience
 - Streamlined onboarding process
 - Clear error messages and notifications
+
+### Security & Reliability
+- **Robust DOM Interaction**: Event-based listeners replace brittle observers for reliable form tracking.
+- **Defensive Programming**: Comprehensive input validation and safe type coercion prevent runtime crashes.
+- **XSS Prevention**: Strict content handling and DOM creation policies ensure secure data rendering.
+- **Self-Validating**: Integrated test suite ensures selector integrity and mapping consistency.
 - Visual progress indicators
 - Detailed logging for troubleshooting
 - Responsive and intuitive interface
@@ -136,6 +144,12 @@ Auto DVIC/
    - Provide progress updates throughout
 
 ## Version History
+
+### v1.1.6 (2026-02-02)
+- Refactored selector and timing architecture:
+  - Externalized UI selectors and timing constants into dedicated `selectors.js` module.
+  - Added validation tests to ensure selector integrity and usage consistency.
+  - Enhanced maintainability through modular content script architecture.
 
 ### v1.1.5 (2026-01-31)
 - Refactored issue mapping system:
