@@ -145,14 +145,11 @@ Auto DVIC/
 
 ## Version History
 
-### v1.1.6 (2025-06-15)
-- Enhanced form field logic:
-  - Added smart default values for inspection location based on station code.
-  - Improved date/time picker interaction for more reliable input.
-  - Added "Clear All" button to quickly reset inspection issues.
-- Optimized performance:
-  - Reduced extension package size by optimizing asset loading.
-  - Refined background script event handling for better memory management.
+### v1.1.6 (2026-02-02)
+- Refactored selector and timing architecture:
+  - Externalized UI selectors and timing constants into dedicated `selectors.js` module.
+  - Added validation tests to ensure selector integrity and usage consistency.
+  - Enhanced maintainability through modular content script architecture.
 
 ### v1.1.5 (2026-01-31)
 - Refactored issue mapping system:
