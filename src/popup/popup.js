@@ -50,8 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (odo) {
                     odoInput.value = odo;
                 }
-            } else {
-                }
+            }
         } catch (error) {
             console.error('Error loading vehicle info:', error);
         }

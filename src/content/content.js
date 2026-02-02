@@ -9,6 +9,14 @@ const getSelectors = () => {
     return window.AutoDVIC_Selectors;
 };
 
+// Helper to get mappings with safety check
+const getMappings = () => {
+    if (!window.AutoDVIC_Mappings) {
+        throw new Error('AutoDVIC_Mappings not found. Extension context may be invalid.');
+    }
+    return window.AutoDVIC_Mappings;
+};
+
 // Helper to get class name without dot
 const getClassName = (selector) => {
     return selector.startsWith('.') ? selector.substring(1) : selector;
@@ -63,8 +71,7 @@ function gatherVehicleInfo() {
     } else if (mileageText === 'Mileage unknown') {
         // Get asset type even if mileage is unknown
         assetType = getPillText(vehicle.assetTypePillIndex);
-    } else {
-        }
+    }
 
     const vehicleInfo = {
         lic: license,
@@ -606,7 +613,7 @@ async function handleDvicSubmission(formData) {
                             const formIssues = formData.issues || {};
                             // Create mapping of issue IDs to their exact text in the fleet portal
                             // Get mappings from global object
-                            const { issueMapping, categoryMapping } = window.AutoDVIC_Mappings || {};
+                            const { issueMapping, categoryMapping } = getMappings();
 
                             if (!issueMapping || !categoryMapping) {
                                 console.error('Mappings not found in window.AutoDVIC_Mappings');
