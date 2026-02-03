@@ -918,6 +918,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
     } else if (message.action === 'ping') {
         sendResponse({ status: 'pong' });
+        return true;
     }
 });
 

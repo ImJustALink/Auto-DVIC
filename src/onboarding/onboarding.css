@@ -270,6 +270,13 @@ input:checked + .toggle-slider:before {
     display: none;
 }
 
+/* Theme Select */
+.theme-select {
+    width: auto;
+    padding: 8px 32px 8px 12px;
+    font-size: 14px;
+}
+
 /* Important note */
 .important-note {
     background-color: var(--warning-bg);

@@ -449,20 +449,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkConnection = async () => {
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (!tab) return; 
+            if (!tab) {
+                // Should not happen in a popup, but good to handle
+                return; 
+            }
 
             // Only check connection on Amazon Fleet Portal pages
             if (tab.url && tab.url.includes('logistics.amazon.com/fleet-management')) {
-                // Try to ping the content script
-                chrome.tabs.sendMessage(tab.id, { action: 'ping' }, (response) => {
-                    if (chrome.runtime.lastError || !response || response.status !== 'pong') {
-                        showConnectionError();
+                try {
+                    // Use promise-based message sending
+                    const response = await chrome.tabs.sendMessage(tab.id, { action: 'ping' });
+                    
+                    if (!response || response.status !== 'pong') {
+                        throw new Error('Invalid ping response');
                     }
-                });
+                } catch (err) {
+                    // This catches both chrome.runtime.lastError and invalid responses
+                    showConnectionError();
+                }
             }
         } catch (error) {
-            // If we can't even query tabs, something is wrong, but we shouldn't block the UI
-            // unless we are sure we are on the target page.
             console.error('Connection check failed:', error);
         }
     };

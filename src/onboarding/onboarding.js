@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         stationCode: '',
         showNotifications: true,
         askSaveLocation: false,
+        theme: 'system',
         devMode: false,
         onboardingComplete: false
     }, function(items) {
@@ -44,6 +45,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         stationCodeInput.value = items.stationCode;
         showNotificationsToggle.checked = items.showNotifications;
         askSaveLocationToggle.checked = items.askSaveLocation;
+        if (themeSelect) {
+            themeSelect.value = items.theme;
+            applyTheme(items.theme);
+        }
         devModeToggle.checked = items.devMode;
         
         // Check if onboarding is already complete
