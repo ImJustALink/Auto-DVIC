@@ -146,7 +146,15 @@ Auto DVIC/
 ## Version History
 
 ### v1.1.6 (2026-02-02)
-- Refactored selector and timing architecture:
+- **UI/UX Overhaul**:
+  - Implemented "Slate" dark theme with improved contrast and visibility.
+  - Added custom high-contrast checkboxes and unified UI styling.
+  - Redesigned popup header and introduced a consolidated menu system.
+  - Added "New!" badge and "Recent Changes" notifications.
+- **Core Improvements**:
+  - Fixed connection reliability issues with robust tab tracking.
+  - Added Theme Toggle (Light/Dark/System) with cross-page persistence.
+- **Technical Refactoring**:
   - Externalized UI selectors and timing constants into dedicated `selectors.js` module.
   - Added validation tests to ensure selector integrity and usage consistency.
   - Enhanced maintainability through modular content script architecture.

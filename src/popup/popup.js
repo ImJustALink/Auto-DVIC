@@ -302,6 +302,32 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.runtime.openOptionsPage();
     });
 
+    // Menu Handling
+    const menuBtn = document.getElementById('menuBtn');
+    const menuDropdown = document.getElementById('menuDropdown');
+
+    if (menuBtn && menuDropdown) {
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isShown = menuDropdown.classList.contains('show');
+            if (isShown) {
+                menuDropdown.classList.remove('show');
+                menuBtn.classList.remove('active');
+            } else {
+                menuDropdown.classList.add('show');
+                menuBtn.classList.add('active');
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuDropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                menuDropdown.classList.remove('show');
+                menuBtn.classList.remove('active');
+            }
+        });
+    }
+
     // Handle collapsible sections
     document.querySelectorAll('.section-toggle').forEach(button => {
         button.addEventListener('click', () => {
@@ -421,6 +447,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Settings button handler (in menu)
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', function() {
+            chrome.runtime.openOptionsPage();
+        });
+    }
+
     function updateTheme(theme) {
         if (theme === 'system') {
             document.documentElement.removeAttribute('data-theme');
@@ -448,25 +481,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Connection Health Check
     const checkConnection = async () => {
         try {
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (!tab) {
-                // Should not happen in a popup, but good to handle
-                return; 
+            // Get the stored source tab ID
+            const { sourceTabId } = await chrome.storage.local.get(['sourceTabId']);
+            
+            if (!sourceTabId) {
+                // If no source tab ID, we can't check connection effectively
+                return;
             }
 
-            // Only check connection on Amazon Fleet Portal pages
-            if (tab.url && tab.url.includes('logistics.amazon.com/fleet-management')) {
-                try {
-                    // Use promise-based message sending
-                    const response = await chrome.tabs.sendMessage(tab.id, { action: 'ping' });
-                    
-                    if (!response || response.status !== 'pong') {
-                        throw new Error('Invalid ping response');
+            try {
+                // Get the tab to verify it still exists
+                const tab = await chrome.tabs.get(sourceTabId);
+                
+                // Only check connection on Amazon Fleet Portal pages
+                if (tab.url && tab.url.includes('logistics.amazon.com/fleet-management')) {
+                    try {
+                        // Use promise-based message sending
+                        const response = await chrome.tabs.sendMessage(sourceTabId, { action: 'ping' });
+                        
+                        if (!response || response.status !== 'pong') {
+                            throw new Error('Invalid ping response');
+                        }
+                    } catch (err) {
+                        // This catches both chrome.runtime.lastError and invalid responses
+                        showConnectionError();
                     }
-                } catch (err) {
-                    // This catches both chrome.runtime.lastError and invalid responses
-                    showConnectionError();
                 }
+            } catch (err) {
+                // Tab might not exist anymore
+                console.log('Source tab not found or inaccessible');
             }
         } catch (error) {
             console.error('Connection check failed:', error);
@@ -482,12 +525,96 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const reloadBtn = document.getElementById('reloadBtn');
     if (reloadBtn) {
-        reloadBtn.addEventListener('click', () => {
-            chrome.tabs.reload();
+        reloadBtn.addEventListener('click', async () => {
+            try {
+                const { sourceTabId } = await chrome.storage.local.get(['sourceTabId']);
+                if (sourceTabId) {
+                    await chrome.tabs.reload(sourceTabId);
+                }
+            } catch (error) {
+                console.error('Error reloading tab:', error);
+            }
             window.close();
         });
     }
 
     // Run check on load
     checkConnection();
+
+    // Changelog System
+    const CHANGELOG = [
+        "New Dark Theme (Change via Menu)",
+        "New Menu System (Access settings, feedback, recent changes)",
+        "Improved Connection Reliability",
+        "Bug Fixes"
+    ];
+    const UPDATE_ID = 'update_2026_02_02_v1_1_6';
+    
+    // Elements
+    const updateBadgeContainer = document.getElementById('updateBadgeContainer');
+    const badgeChangelogList = document.getElementById('badgeChangelogList');
+    const modalChangelogList = document.getElementById('modalChangelogList');
+    const changelogBtn = document.getElementById('changelogBtn');
+    const changelogModal = document.getElementById('changelogModal');
+    const closeChangelogModal = document.querySelector('.close-modal-changelog');
+
+    // Populate Lists
+    const populateList = (listElement) => {
+        if (!listElement) return;
+        listElement.innerHTML = CHANGELOG.map(item => `<li>${item}</li>`).join('');
+    };
+    
+    populateList(badgeChangelogList);
+    populateList(modalChangelogList);
+
+    // Check Visibility Logic
+    chrome.storage.local.get([`firstSeen_${UPDATE_ID}`], function(result) {
+        const firstSeen = result[`firstSeen_${UPDATE_ID}`];
+        const now = Date.now();
+        
+        if (!firstSeen) {
+            // First time seeing this update
+            chrome.storage.local.set({ [`firstSeen_${UPDATE_ID}`]: now });
+            if (updateBadgeContainer) updateBadgeContainer.style.display = 'flex';
+        } else {
+            // Check if 3 days have passed (3 * 24 * 60 * 60 * 1000 = 259200000 ms)
+            const threeDaysMs = 259200000;
+            if (now - firstSeen < threeDaysMs) {
+                if (updateBadgeContainer) updateBadgeContainer.style.display = 'flex';
+            } else {
+                if (updateBadgeContainer) updateBadgeContainer.style.display = 'none';
+            }
+        }
+    });
+
+    // Modal Logic
+    if (changelogBtn && changelogModal) {
+        changelogBtn.addEventListener('click', () => {
+            // Close menu first
+            if (menuDropdown) menuDropdown.classList.remove('show');
+            if (menuBtn) menuBtn.classList.remove('active');
+            
+            changelogModal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                changelogModal.classList.add('show');
+            });
+        });
+
+        const closeChangelog = () => {
+            changelogModal.classList.remove('show');
+            setTimeout(() => {
+                changelogModal.style.display = 'none';
+            }, 200);
+        };
+
+        if (closeChangelogModal) {
+            closeChangelogModal.addEventListener('click', closeChangelog);
+        }
+
+        changelogModal.addEventListener('click', (e) => {
+            if (e.target === changelogModal) {
+                closeChangelog();
+            }
+        });
+    }
 });
