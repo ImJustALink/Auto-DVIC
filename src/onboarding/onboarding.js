@@ -114,17 +114,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Listen for theme changes from other contexts (like the popup)
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'sync' && changes.theme) {
-            const newTheme = changes.theme.newValue;
-            applyTheme(newTheme);
-            if (themeSelect) {
-                themeSelect.value = newTheme;
-            }
-        }
-    });
-
     function applyTheme(theme) {
         if (theme === 'system') {
             document.documentElement.removeAttribute('data-theme');

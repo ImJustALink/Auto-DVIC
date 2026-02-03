@@ -394,55 +394,55 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Theme Management
-    const themeBtn = document.getElementById('themeBtn');
-    const themeIcon = document.getElementById('themeIcon');
-    const themes = ['system', 'light', 'dark'];
-    
-    // Icons
-    const icons = {
-        light: `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`,
-        dark: `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`,
-        system: `<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>`
-    };
+    // Load saved settings including theme
+    chrome.storage.sync.get({
+        theme: 'system'
+    }, function(items) {
+        updateTheme(items.theme);
+        updateThemeIcon(items.theme);
+    });
 
-    const updateThemeIcon = (theme) => {
-        if (themeIcon && icons[theme]) {
-            themeIcon.innerHTML = icons[theme];
-        }
-        if (themeBtn) {
-            themeBtn.title = `Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`;
-        }
-    };
+    // Theme toggle handler
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            chrome.storage.sync.get({ theme: 'system' }, function(items) {
+                const current = items.theme;
+                let next = 'system';
+                if (current === 'system') next = 'light';
+                else if (current === 'light') next = 'dark';
+                else if (current === 'dark') next = 'system';
+                
+                chrome.storage.sync.set({ theme: next }, function() {
+                    updateTheme(next);
+                    updateThemeIcon(next);
+                });
+            });
+        });
+    }
 
-    const applyTheme = (theme) => {
+    function updateTheme(theme) {
         if (theme === 'system') {
             document.documentElement.removeAttribute('data-theme');
         } else {
             document.documentElement.setAttribute('data-theme', theme);
         }
-        updateThemeIcon(theme);
-    };
+    }
 
-    // Load saved settings including theme
-    chrome.storage.sync.get({
-        theme: 'system'
-    }, function(items) {
-        applyTheme(items.theme);
-    });
+    function updateThemeIcon(theme) {
+        const sun = document.querySelector('.sun-icon');
+        const moon = document.querySelector('.moon-icon');
+        const auto = document.querySelector('.auto-icon');
+        
+        if (!sun || !moon || !auto) return;
 
-    if (themeBtn) {
-        themeBtn.addEventListener('click', () => {
-            chrome.storage.sync.get({ theme: 'system' }, (items) => {
-                const currentTheme = items.theme;
-                const nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
-                const nextTheme = themes[nextIndex];
+        sun.style.display = 'none';
+        moon.style.display = 'none';
+        auto.style.display = 'none';
 
-                chrome.storage.sync.set({ theme: nextTheme }, () => {
-                    applyTheme(nextTheme);
-                });
-            });
-        });
+        if (theme === 'light') sun.style.display = 'block';
+        else if (theme === 'dark') moon.style.display = 'block';
+        else auto.style.display = 'block';
     }
 
     // Connection Health Check

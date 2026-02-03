@@ -6,7 +6,7 @@ body {
     padding: 0;
     background-color: var(--background);
     color: var(--text-primary);
-    min-width: 350px;
+    min-width: 320px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -14,7 +14,7 @@ body {
 .container {
     padding: 24px 16px;
     width: 100%;
-    max-width: 420px;
+    max-width: 370px;
     margin: 0 auto;
     box-sizing: border-box;
 }
@@ -501,7 +501,8 @@ button[type="submit"]:active {
 }
 
 .info-toggle:hover {
-    filter: brightness(0.95);
+    background-color: var(--primary-color);
+    color: white;
 }
 
 .info-content {
