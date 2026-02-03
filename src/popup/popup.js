@@ -167,6 +167,12 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
 
+        // Check connection before proceeding
+        const isConnected = await checkConnection();
+        if (!isConnected) {
+            return;
+        }
+
         // Validate checkbox consistency
         const issueCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="1_"], input[type="checkbox"][id^="2_"], input[type="checkbox"][id^="3_"], input[type="checkbox"][id^="4_"], input[type="checkbox"][id^="5_"]');
         const hasIssues = Array.from(issueCheckboxes).some(checkbox => checkbox.checked);
@@ -297,10 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle settings button click
-    settingsBtn.addEventListener('click', function() {
-        chrome.runtime.openOptionsPage();
-    });
+
 
     // Menu Handling
     const menuBtn = document.getElementById('menuBtn');
@@ -486,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!sourceTabId) {
                 // If no source tab ID, we can't check connection effectively
-                return;
+                return true;
             }
 
             try {
@@ -502,9 +505,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (!response || response.status !== 'pong') {
                             throw new Error('Invalid ping response');
                         }
+                        return true;
                     } catch (err) {
                         // This catches both chrome.runtime.lastError and invalid responses
                         showConnectionError();
+                        return false;
                     }
                 }
             } catch (err) {
@@ -514,6 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Connection check failed:', error);
         }
+        return true;
     };
 
     const showConnectionError = () => {
