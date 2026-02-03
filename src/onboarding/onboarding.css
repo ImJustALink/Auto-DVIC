@@ -27,12 +27,12 @@
 }
 
 .settings-section {
-    background: white;
+    background: var(--background);
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 32px;
     margin-bottom: 32px;
-    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.10);
+    box-shadow: var(--shadow-md);
 }
 
 .settings-section h2 {
@@ -47,14 +47,15 @@
 }
 
 .important-note {
-    background: #fffbe6;
-    color: #ad8500;
+    background: var(--warning-bg);
+    color: var(--warning-text);
     padding: 16px 20px;
     border-radius: 12px;
     margin-bottom: 32px;
     font-size: 15px;
     font-weight: 600;
-    box-shadow: 0 2px 12px rgba(173, 133, 0, 0.10), 0 1px 4px rgba(0,0,0,0.04);
+    border: 1px solid var(--warning-border);
+    box-shadow: var(--shadow-sm);
 }
 
 /* File input styling */
@@ -239,7 +240,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #e4e4e4;
+    background-color: var(--border-color);
     transition: .2s;
     border-radius: 32px;
 }
@@ -269,11 +270,18 @@ input:checked + .toggle-slider:before {
     display: none;
 }
 
+/* Theme Select */
+.theme-select {
+    width: auto;
+    padding: 8px 32px 8px 12px;
+    font-size: 14px;
+}
+
 /* Important note */
 .important-note {
-    background-color: #fff3cd;
-    border: 1px solid #ffeeba;
-    color: #856404;
+    background-color: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    color: var(--warning-text);
     padding: 16px;
     border-radius: 12px;
     margin-bottom: 32px;
@@ -337,9 +345,9 @@ input:checked + .toggle-slider:before {
     top: 24px;
     right: 24px;
     width: 280px;
-    background-color: white;
+    background-color: var(--background);
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-md);
     z-index: 1000;
     overflow: hidden;
     transition: all 0.3s ease;

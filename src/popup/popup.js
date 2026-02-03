@@ -167,6 +167,12 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
 
+        // Check connection before proceeding
+        const isConnected = await checkConnection();
+        if (!isConnected) {
+            return;
+        }
+
         // Validate checkbox consistency
         const issueCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="1_"], input[type="checkbox"][id^="2_"], input[type="checkbox"][id^="3_"], input[type="checkbox"][id^="4_"], input[type="checkbox"][id^="5_"]');
         const hasIssues = Array.from(issueCheckboxes).some(checkbox => checkbox.checked);
@@ -297,10 +303,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle settings button click
-    settingsBtn.addEventListener('click', function() {
-        chrome.runtime.openOptionsPage();
-    });
+
+
+    // Menu Handling
+    const menuBtn = document.getElementById('menuBtn');
+    const menuDropdown = document.getElementById('menuDropdown');
+
+    if (menuBtn && menuDropdown) {
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isShown = menuDropdown.classList.contains('show');
+            if (isShown) {
+                menuDropdown.classList.remove('show');
+                menuBtn.classList.remove('active');
+            } else {
+                menuDropdown.classList.add('show');
+                menuBtn.classList.add('active');
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuDropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                menuDropdown.classList.remove('show');
+                menuBtn.classList.remove('active');
+            }
+        });
+    }
 
     // Handle collapsible sections
     document.querySelectorAll('.section-toggle').forEach(button => {
@@ -327,6 +356,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Feedback Handling
+    const feedbackBtn = document.getElementById('feedbackBtn');
+    const feedbackModal = document.getElementById('feedbackModal');
+    const closeModal = document.querySelector('.close-modal');
+    const feedbackOptions = document.querySelectorAll('.feedback-option');
+
+    if (feedbackBtn && feedbackModal) {
+        feedbackBtn.addEventListener('click', () => {
+            feedbackModal.style.display = 'flex';
+            // Small delay to allow display:flex to apply before adding opacity class
+            requestAnimationFrame(() => {
+                feedbackModal.classList.add('show');
+            });
+        });
+
+        const closeFeedback = () => {
+            feedbackModal.classList.remove('show');
+            setTimeout(() => {
+                feedbackModal.style.display = 'none';
+            }, 200);
+        };
+
+        if (closeModal) {
+            closeModal.addEventListener('click', closeFeedback);
+        }
+
+        // Close on click outside
+        feedbackModal.addEventListener('click', (e) => {
+            if (e.target === feedbackModal) {
+                closeFeedback();
+            }
+        });
+
+        // Handle options
+        feedbackOptions.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                const subject = `[${type}] Auto-DVIC Feedback`;
+                const email = 'dev@harveyrustman.com';
+                const body = 'Please describe your feedback here...';
+                
+                const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                
+                // Open mailto link
+                chrome.tabs.create({ url: mailtoLink });
+                
+                closeFeedback();
+            });
+        });
+    }
+
     // Notify content script when popup is closing
     window.addEventListener('beforeunload', function() {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -342,4 +422,205 @@ document.addEventListener('DOMContentLoaded', function() {
             loadDriverList();
         }
     });
+
+    // Load saved settings including theme
+    chrome.storage.sync.get({
+        theme: 'system'
+    }, function(items) {
+        updateTheme(items.theme);
+        updateThemeIcon(items.theme);
+    });
+
+    // Theme toggle handler
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            chrome.storage.sync.get({ theme: 'system' }, function(items) {
+                const current = items.theme;
+                let next = 'system';
+                if (current === 'system') next = 'light';
+                else if (current === 'light') next = 'dark';
+                else if (current === 'dark') next = 'system';
+                
+                chrome.storage.sync.set({ theme: next }, function() {
+                    updateTheme(next);
+                    updateThemeIcon(next);
+                });
+            });
+        });
+    }
+
+    // Settings button handler (in menu)
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', function() {
+            chrome.runtime.openOptionsPage();
+        });
+    }
+
+    function updateTheme(theme) {
+        if (theme === 'system') {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+    }
+
+    function updateThemeIcon(theme) {
+        const sun = document.querySelector('.sun-icon');
+        const moon = document.querySelector('.moon-icon');
+        const auto = document.querySelector('.auto-icon');
+        
+        if (!sun || !moon || !auto) return;
+
+        sun.style.display = 'none';
+        moon.style.display = 'none';
+        auto.style.display = 'none';
+
+        if (theme === 'light') sun.style.display = 'block';
+        else if (theme === 'dark') moon.style.display = 'block';
+        else auto.style.display = 'block';
+    }
+
+    // Connection Health Check
+    const checkConnection = async () => {
+        try {
+            // Get the stored source tab ID
+            const { sourceTabId } = await chrome.storage.local.get(['sourceTabId']);
+            
+            if (!sourceTabId) {
+                // If no source tab ID, we can't check connection effectively
+                return true;
+            }
+
+            try {
+                // Get the tab to verify it still exists
+                const tab = await chrome.tabs.get(sourceTabId);
+                
+                // Only check connection on Amazon Fleet Portal pages
+                if (tab.url && tab.url.includes('logistics.amazon.com/fleet-management')) {
+                    try {
+                        // Use promise-based message sending
+                        const response = await chrome.tabs.sendMessage(sourceTabId, { action: 'ping' });
+                        
+                        if (!response || response.status !== 'pong') {
+                            throw new Error('Invalid ping response');
+                        }
+                        return true;
+                    } catch (err) {
+                        // This catches both chrome.runtime.lastError and invalid responses
+                        showConnectionError();
+                        return false;
+                    }
+                }
+            } catch (err) {
+                // Tab might not exist anymore
+                console.log('Source tab not found or inaccessible');
+            }
+        } catch (error) {
+            console.error('Connection check failed:', error);
+        }
+        return true;
+    };
+
+    const showConnectionError = () => {
+        const errorOverlay = document.getElementById('connectionError');
+        if (errorOverlay) {
+            errorOverlay.classList.add('visible');
+        }
+    };
+
+    const reloadBtn = document.getElementById('reloadBtn');
+    if (reloadBtn) {
+        reloadBtn.addEventListener('click', async () => {
+            try {
+                const { sourceTabId } = await chrome.storage.local.get(['sourceTabId']);
+                if (sourceTabId) {
+                    await chrome.tabs.reload(sourceTabId);
+                }
+            } catch (error) {
+                console.error('Error reloading tab:', error);
+            }
+            window.close();
+        });
+    }
+
+    // Run check on load
+    checkConnection();
+
+    // Changelog System
+    const CHANGELOG = [
+        "New Dark Theme (Change via Menu)",
+        "New Menu System (Access settings, feedback, recent changes)",
+        "Improved Connection Reliability",
+        "Bug Fixes"
+    ];
+    const UPDATE_ID = 'update_2026_02_02_v1_1_6';
+    
+    // Elements
+    const updateBadgeContainer = document.getElementById('updateBadgeContainer');
+    const badgeChangelogList = document.getElementById('badgeChangelogList');
+    const modalChangelogList = document.getElementById('modalChangelogList');
+    const changelogBtn = document.getElementById('changelogBtn');
+    const changelogModal = document.getElementById('changelogModal');
+    const closeChangelogModal = document.querySelector('.close-modal-changelog');
+
+    // Populate Lists
+    const populateList = (listElement) => {
+        if (!listElement) return;
+        listElement.innerHTML = CHANGELOG.map(item => `<li>${item}</li>`).join('');
+    };
+    
+    populateList(badgeChangelogList);
+    populateList(modalChangelogList);
+
+    // Check Visibility Logic
+    chrome.storage.local.get([`firstSeen_${UPDATE_ID}`], function(result) {
+        const firstSeen = result[`firstSeen_${UPDATE_ID}`];
+        const now = Date.now();
+        
+        if (!firstSeen) {
+            // First time seeing this update
+            chrome.storage.local.set({ [`firstSeen_${UPDATE_ID}`]: now });
+            if (updateBadgeContainer) updateBadgeContainer.style.display = 'flex';
+        } else {
+            // Check if 3 days have passed (3 * 24 * 60 * 60 * 1000 = 259200000 ms)
+            const threeDaysMs = 259200000;
+            if (now - firstSeen < threeDaysMs) {
+                if (updateBadgeContainer) updateBadgeContainer.style.display = 'flex';
+            } else {
+                if (updateBadgeContainer) updateBadgeContainer.style.display = 'none';
+            }
+        }
+    });
+
+    // Modal Logic
+    if (changelogBtn && changelogModal) {
+        changelogBtn.addEventListener('click', () => {
+            // Close menu first
+            if (menuDropdown) menuDropdown.classList.remove('show');
+            if (menuBtn) menuBtn.classList.remove('active');
+            
+            changelogModal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                changelogModal.classList.add('show');
+            });
+        });
+
+        const closeChangelog = () => {
+            changelogModal.classList.remove('show');
+            setTimeout(() => {
+                changelogModal.style.display = 'none';
+            }, 200);
+        };
+
+        if (closeChangelogModal) {
+            closeChangelogModal.addEventListener('click', closeChangelog);
+        }
+
+        changelogModal.addEventListener('click', (e) => {
+            if (e.target === changelogModal) {
+                closeChangelog();
+            }
+        });
+    }
 });
